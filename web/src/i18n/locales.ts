@@ -26,7 +26,8 @@ export type MessageKey =
   | 'appTagline'
   | 'heroLead'
   | 'toolbarPeriod'
-  | 'toolbarDisplay'
+  | 'toolbarInterface'
+  | 'labelTheme'
   | 'sectionSummaryTitle'
   | 'sectionSummaryDesc'
   | 'kpiCardIncomeSub'
@@ -92,9 +93,10 @@ const en: Record<MessageKey, string> = {
   appTitle: 'Moneta',
   appTagline: 'Track income, expenses, and monthly limits in one place.',
   heroLead:
-    'Income, spending, and monthly limits — clear and fast, no spreadsheets.',
+    'Income, spending, and monthly limits — your assistant for staying in control of your money.',
   toolbarPeriod: 'Reporting period',
-  toolbarDisplay: 'Display',
+  toolbarInterface: 'Interface',
+  labelTheme: 'Theme',
   sectionSummaryTitle: 'This month at a glance',
   sectionSummaryDesc:
     'These three numbers include only operations whose date falls in the month you selected in the bar above.',
@@ -176,9 +178,11 @@ const en: Record<MessageKey, string> = {
 const ru: Record<MessageKey, string> = {
   appTitle: 'Монета',
   appTagline: 'Доходы, расходы и месячные лимиты в одном месте.',
-  heroLead: 'Доходы, расходы и лимиты за месяц — наглядно, без таблиц и формул.',
+  heroLead:
+    'Доходы, расходы и лимиты за месяц — твой помощник в контроле средств.',
   toolbarPeriod: 'Период отчёта',
-  toolbarDisplay: 'Оформление',
+  toolbarInterface: 'Интерфейс',
+  labelTheme: 'Тема',
   sectionSummaryTitle: 'Сводка за выбранный месяц',
   sectionSummaryDesc:
     'Эти три цифры считаются только по операциям, у которых дата попадает в месяц, выбранный в панели выше.',

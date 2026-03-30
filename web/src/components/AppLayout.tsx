@@ -93,20 +93,9 @@ export default function AppLayout() {
           </div>
 
           <div className="toolbar-block toolbar-block--end">
-            <div className="toolbar-split">
-              <div className="toolbar-theme-group">
-                <span className="toolbar-inline-label">{t('toolbarDisplay')}</span>
-                <button
-                  type="button"
-                  className="theme-toggle"
-                  onClick={toggleTheme}
-                  aria-label={t('themeToggle')}
-                  title={theme === 'light' ? t('themeDark') : t('themeLight')}
-                >
-                  {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-                </button>
-              </div>
-              <label className="field-stack field-stack--lang">
+            <p className="toolbar-heading">{t('toolbarInterface')}</p>
+            <div className="toolbar-row">
+              <label className="field-stack field-stack--toolbar">
                 <span className="field-stack-label">{t('language')}</span>
                 <select
                   className="select-input"
@@ -121,6 +110,18 @@ export default function AppLayout() {
                   ))}
                 </select>
               </label>
+              <div className="field-stack field-stack--toolbar field-stack--theme">
+                <span className="field-stack-label">{t('labelTheme')}</span>
+                <button
+                  type="button"
+                  className="theme-toggle"
+                  onClick={toggleTheme}
+                  aria-label={t('themeToggle')}
+                  title={theme === 'light' ? t('themeDark') : t('themeLight')}
+                >
+                  {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+                </button>
+              </div>
             </div>
           </div>
         </div>
