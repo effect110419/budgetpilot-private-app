@@ -1,8 +1,14 @@
+import { useMemo } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { LOCALE_OPTIONS, monthMessageKey, type Locale } from '../i18n/locales'
+import {
+  LOCALE_OPTIONS,
+  monthMessageKey,
+  type Locale,
+} from '../i18n/locales'
 import { useI18n } from '../i18n/I18nProvider'
 import { useTheme } from '../theme/ThemeProvider'
 import { useBudgetData } from '../data/BudgetDataContext'
+import SelectField from './SelectField'
 
 function MoonIcon() {
   return (
@@ -42,6 +48,26 @@ export default function AppLayout() {
     setSelectedMonth,
   } = useBudgetData()
 
+  const monthOptions = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, i) => {
+        const m = i + 1
+        const v = String(m).padStart(2, '0')
+        return { value: v, label: t(monthMessageKey(m)) }
+      }),
+    [t],
+  )
+
+  const yearSelectOptions = useMemo(
+    () => yearOptions.map((y) => ({ value: String(y), label: String(y) })),
+    [yearOptions],
+  )
+
+  const localeSelectOptions = useMemo(
+    () => LOCALE_OPTIONS.map((o) => ({ value: o.value, label: o.label })),
+    [],
+  )
+
   return (
     <div className="app-shell">
       <header className="hero">
@@ -56,38 +82,21 @@ export default function AppLayout() {
             <div className="toolbar-row">
               <label className="field-stack">
                 <span className="field-stack-label">{t('monthLabel')}</span>
-                <select
-                  className="select-input"
+                <SelectField
                   value={selectedMonthPart}
-                  onChange={(e) =>
-                    setSelectedMonth(`${selectedYear}-${e.target.value}`)
-                  }
-                >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
-                    const v = String(m).padStart(2, '0')
-                    return (
-                      <option key={m} value={v}>
-                        {t(monthMessageKey(m))}
-                      </option>
-                    )
-                  })}
-                </select>
+                  onChange={(v) => setSelectedMonth(`${selectedYear}-${v}`)}
+                  options={monthOptions}
+                  ariaLabel={t('monthLabel')}
+                />
               </label>
               <label className="field-stack">
                 <span className="field-stack-label">{t('yearLabel')}</span>
-                <select
-                  className="select-input"
+                <SelectField
                   value={selectedYear}
-                  onChange={(e) =>
-                    setSelectedMonth(`${e.target.value}-${selectedMonthPart}`)
-                  }
-                >
-                  {yearOptions.map((y) => (
-                    <option key={y} value={String(y)}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(v) => setSelectedMonth(`${v}-${selectedMonthPart}`)}
+                  options={yearSelectOptions}
+                  ariaLabel={t('yearLabel')}
+                />
               </label>
             </div>
           </div>
@@ -97,18 +106,12 @@ export default function AppLayout() {
             <div className="toolbar-row">
               <label className="field-stack field-stack--toolbar">
                 <span className="field-stack-label">{t('language')}</span>
-                <select
-                  className="select-input"
+                <SelectField
                   value={locale}
-                  onChange={(e) => setLocale(e.target.value as Locale)}
-                  aria-label={t('language')}
-                >
-                  {LOCALE_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(v) => setLocale(v as Locale)}
+                  options={localeSelectOptions}
+                  ariaLabel={t('language')}
+                />
               </label>
               <div className="field-stack field-stack--toolbar field-stack--theme">
                 <span className="field-stack-label">{t('labelTheme')}</span>

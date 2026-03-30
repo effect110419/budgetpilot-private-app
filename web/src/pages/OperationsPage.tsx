@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import { categoryLabel } from '../i18n/locales'
 import { useBudgetData } from '../data/BudgetDataContext'
 import type { TransactionType } from '../data/budgetTypes'
+import SelectField from '../components/SelectField'
 
 export default function OperationsPage() {
   const {
@@ -15,6 +17,23 @@ export default function OperationsPage() {
     formatDate,
   } = useBudgetData()
 
+  const typeOptions = useMemo(
+    () => [
+      { value: 'expense', label: t('typeExpense') },
+      { value: 'income', label: t('typeIncome') },
+    ],
+    [t],
+  )
+
+  const categoryOptions = useMemo(
+    () =>
+      defaultCategories.map((item) => ({
+        value: item,
+        label: categoryLabel(item, t),
+      })),
+    [defaultCategories, t],
+  )
+
   return (
     <div className="page page--stack">
       <div className="section-heading">
@@ -27,19 +46,14 @@ export default function OperationsPage() {
           <div className="form-grid form-grid--2">
             <label className="form-field">
               <span className="form-field-label">{t('type')}</span>
-              <select
-                className="select-input"
+              <SelectField
                 value={form.type}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    type: e.target.value as TransactionType,
-                  }))
+                onChange={(v) =>
+                  setForm((prev) => ({ ...prev, type: v as TransactionType }))
                 }
-              >
-                <option value="expense">{t('typeExpense')}</option>
-                <option value="income">{t('typeIncome')}</option>
-              </select>
+                options={typeOptions}
+                ariaLabel={t('type')}
+              />
             </label>
             <label className="form-field">
               <span className="form-field-label">{t('amount')}</span>
@@ -61,20 +75,13 @@ export default function OperationsPage() {
 
           <label className="form-field">
             <span className="form-field-label">{t('category')}</span>
-            <select
-              className="select-input"
+            <SelectField
               value={form.category}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, category: e.target.value }))
-              }
-              required
-            >
-              {defaultCategories.map((item) => (
-                <option key={item} value={item}>
-                  {categoryLabel(item, t)}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setForm((prev) => ({ ...prev, category: v }))}
+              options={categoryOptions}
+              ariaLabel={t('category')}
+              menuMaxHeight={320}
+            />
             <span className="field-hint">{t('hintCategory')}</span>
           </label>
 
