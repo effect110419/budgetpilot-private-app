@@ -142,6 +142,7 @@ function App() {
 
   const selectedYear = selectedMonth.slice(0, 4)
   const selectedMonthPart = selectedMonth.slice(5, 7)
+  const monthName = t(monthMessageKey(Number(selectedMonthPart)))
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ transactions, budgets }))
@@ -215,258 +216,329 @@ function App() {
   }
 
   return (
-    <main className="app">
-      <header className="top">
-        <div>
-          <h1>{t('appTitle')}</h1>
-          <p className="tagline">{t('appTagline')}</p>
+    <div className="app-shell">
+      <header className="hero">
+        <div className="hero-main">
+          <p className="hero-eyebrow">{t('appTitle')}</p>
+          <p className="hero-lead">{t('heroLead')}</p>
         </div>
-        <div className="top-actions">
-          <button
-            type="button"
-            className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={t('themeToggle')}
-            title={theme === 'light' ? t('themeDark') : t('themeLight')}
-          >
-            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-          </button>
-          <label className="field-stack">
-            <span>{t('language')}</span>
-            <select
-              className="select-input"
-              value={locale}
-              onChange={(e) => setLocale(e.target.value as Locale)}
-              aria-label={t('language')}
-            >
-              {LOCALE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="month-picker-group" role="group" aria-label={t('monthLabel')}>
-            <label className="field-stack">
-              <span>{t('monthLabel')}</span>
-              <select
-                className="select-input"
-                value={selectedMonthPart}
-                onChange={(e) =>
-                  setSelectedMonth(`${selectedYear}-${e.target.value}`)
-                }
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
-                  const v = String(m).padStart(2, '0')
-                  return (
-                    <option key={m} value={v}>
-                      {t(monthMessageKey(m))}
+
+        <div className="toolbar" role="presentation">
+          <div className="toolbar-block">
+            <p className="toolbar-heading">{t('toolbarPeriod')}</p>
+            <div className="toolbar-row">
+              <label className="field-stack">
+                <span className="field-stack-label">{t('monthLabel')}</span>
+                <select
+                  className="select-input"
+                  value={selectedMonthPart}
+                  onChange={(e) =>
+                    setSelectedMonth(`${selectedYear}-${e.target.value}`)
+                  }
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
+                    const v = String(m).padStart(2, '0')
+                    return (
+                      <option key={m} value={v}>
+                        {t(monthMessageKey(m))}
+                      </option>
+                    )
+                  })}
+                </select>
+              </label>
+              <label className="field-stack">
+                <span className="field-stack-label">{t('yearLabel')}</span>
+                <select
+                  className="select-input"
+                  value={selectedYear}
+                  onChange={(e) =>
+                    setSelectedMonth(`${e.target.value}-${selectedMonthPart}`)
+                  }
+                >
+                  {yearOptions.map((y) => (
+                    <option key={y} value={String(y)}>
+                      {y}
                     </option>
-                  )
-                })}
-              </select>
-            </label>
-            <label className="field-stack">
-              <span>{t('yearLabel')}</span>
-              <select
-                className="select-input"
-                value={selectedYear}
-                onChange={(e) =>
-                  setSelectedMonth(`${e.target.value}-${selectedMonthPart}`)
-                }
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div className="toolbar-block toolbar-block--end">
+            <p className="toolbar-heading">{t('toolbarDisplay')}</p>
+            <div className="toolbar-row toolbar-row--compact">
+              <button
+                type="button"
+                className="theme-toggle"
+                onClick={toggleTheme}
+                aria-label={t('themeToggle')}
+                title={theme === 'light' ? t('themeDark') : t('themeLight')}
               >
-                {yearOptions.map((y) => (
-                  <option key={y} value={String(y)}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </label>
+                {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+              </button>
+              <label className="field-stack field-stack--grow">
+                <span className="field-stack-label">{t('language')}</span>
+                <select
+                  className="select-input"
+                  value={locale}
+                  onChange={(e) => setLocale(e.target.value as Locale)}
+                  aria-label={t('language')}
+                >
+                  {LOCALE_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </div>
         </div>
       </header>
 
-      <section className="cards">
-        <article className="card">
-          <h2>{t('summaryIncome')}</h2>
-          <strong className="ok">{currency(totalIncome, locale)}</strong>
-        </article>
-        <article className="card">
-          <h2>{t('summaryExpenses')}</h2>
-          <strong className="danger">{currency(totalExpense, locale)}</strong>
-        </article>
-        <article className="card">
-          <h2>{t('summaryBalance')}</h2>
-          <strong className={balance >= 0 ? 'ok' : 'danger'}>
-            {currency(balance, locale)}
-          </strong>
-        </article>
-      </section>
-
-      <section className="grid">
-        <article className="panel">
-          <div className="panel-header">
-            <h2>{t('addTransaction')}</h2>
+      <main className="app">
+        <section className="page-section page-section--first" aria-labelledby="summary-heading">
+          <div className="section-heading">
+            <h2 id="summary-heading" className="section-title">
+              {t('sectionSummaryTitle')}
+            </h2>
+            <p className="section-period">
+              {monthName} {selectedYear}
+            </p>
+            <p className="section-desc">{t('sectionSummaryDesc')}</p>
           </div>
-          <form className="form" onSubmit={handleAddTransaction}>
-            <label>
-              {t('type')}
-              <select
-                className="select-input"
-                value={form.type}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, type: e.target.value as TransactionType }))
-                }
-              >
-                <option value="expense">{t('typeExpense')}</option>
-                <option value="income">{t('typeIncome')}</option>
-              </select>
-            </label>
 
-            <label>
-              {t('amount')}
-              <input
-                type="number"
-                min="1"
-                step="1"
-                value={form.amount}
-                onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
-                placeholder="5000"
-                required
-              />
-            </label>
-
-            <label>
-              {t('category')}
-              <select
-                className="select-input"
-                value={form.category}
-                onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
-                required
-              >
-                {DEFAULT_CATEGORIES.map((item) => (
-                  <option key={item} value={item}>
-                    {categoryLabel(item, t)}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              {t('date')}
-              <input
-                type="date"
-                value={form.date}
-                onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
-                required
-              />
-            </label>
-
-            <label>
-              {t('note')}
-              <input
-                type="text"
-                value={form.note}
-                onChange={(e) => setForm((prev) => ({ ...prev, note: e.target.value }))}
-                placeholder={t('optional')}
-              />
-            </label>
-
-            <button type="submit">{t('saveTransaction')}</button>
-          </form>
-        </article>
-
-        <article className="panel">
-          <div className="panel-header">
-            <h2>{t('categoryBudgets')}</h2>
-            <p className="muted">{t('categoryBudgetsHint')}</p>
+          <div className="stat-cards">
+            <article className="stat-card stat-card--income">
+              <h3 className="stat-card__title">{t('summaryIncome')}</h3>
+              <p className="stat-card__hint">{t('kpiCardIncomeSub')}</p>
+              <p className="stat-card__value ok">{currency(totalIncome, locale)}</p>
+            </article>
+            <article className="stat-card stat-card--expense">
+              <h3 className="stat-card__title">{t('summaryExpenses')}</h3>
+              <p className="stat-card__hint">{t('kpiCardExpenseSub')}</p>
+              <p className="stat-card__value danger">{currency(totalExpense, locale)}</p>
+            </article>
+            <article className="stat-card stat-card--balance">
+              <h3 className="stat-card__title">{t('summaryBalance')}</h3>
+              <p className="stat-card__hint">{t('kpiCardBalanceSub')}</p>
+              <p className={`stat-card__value ${balance >= 0 ? 'ok' : 'danger'}`}>
+                {currency(balance, locale)}
+              </p>
+            </article>
           </div>
-          <div className="budget-list">
-            {DEFAULT_CATEGORIES.filter((item) => item !== 'Salary' && item !== 'Freelance').map(
-              (category) => {
-                const spent = expensesByCategory.find(([name]) => name === category)?.[1] ?? 0
+        </section>
+
+        <section className="page-section" aria-labelledby="entry-heading">
+          <div className="section-heading">
+            <h2 id="entry-heading" className="section-title">
+              {t('sectionEntryTitle')}
+            </h2>
+            <p className="section-desc">{t('sectionEntryDesc')}</p>
+          </div>
+
+          <div className="panel panel--feature">
+            <form className="form form--structured" onSubmit={handleAddTransaction}>
+              <div className="form-grid form-grid--2">
+                <label className="form-field">
+                  <span className="form-field-label">{t('type')}</span>
+                  <select
+                    className="select-input"
+                    value={form.type}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        type: e.target.value as TransactionType,
+                      }))
+                    }
+                  >
+                    <option value="expense">{t('typeExpense')}</option>
+                    <option value="income">{t('typeIncome')}</option>
+                  </select>
+                </label>
+                <label className="form-field">
+                  <span className="form-field-label">{t('amount')}</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={form.amount}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, amount: e.target.value }))
+                    }
+                    placeholder="5000"
+                    required
+                    autoComplete="off"
+                  />
+                  <span className="field-hint">{t('hintAmount')}</span>
+                </label>
+              </div>
+
+              <label className="form-field">
+                <span className="form-field-label">{t('category')}</span>
+                <select
+                  className="select-input"
+                  value={form.category}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, category: e.target.value }))
+                  }
+                  required
+                >
+                  {DEFAULT_CATEGORIES.map((item) => (
+                    <option key={item} value={item}>
+                      {categoryLabel(item, t)}
+                    </option>
+                  ))}
+                </select>
+                <span className="field-hint">{t('hintCategory')}</span>
+              </label>
+
+              <div className="form-grid form-grid--2">
+                <label className="form-field">
+                  <span className="form-field-label">{t('date')}</span>
+                  <input
+                    type="date"
+                    value={form.date}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, date: e.target.value }))
+                    }
+                    required
+                  />
+                  <span className="field-hint">{t('hintDate')}</span>
+                </label>
+                <label className="form-field">
+                  <span className="form-field-label">{t('note')}</span>
+                  <input
+                    type="text"
+                    value={form.note}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, note: e.target.value }))
+                    }
+                    placeholder={t('optional')}
+                    autoComplete="off"
+                  />
+                </label>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="btn-primary">
+                  {t('saveTransaction')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section className="page-section" aria-labelledby="budget-heading">
+          <div className="section-heading">
+            <h2 id="budget-heading" className="section-title">
+              {t('sectionBudgetTitle')}
+            </h2>
+            <p className="section-desc">{t('sectionBudgetDesc')}</p>
+          </div>
+
+          <div className="panel">
+            <div className="budget-list">
+              {DEFAULT_CATEGORIES.filter(
+                (item) => item !== 'Salary' && item !== 'Freelance',
+              ).map((category) => {
+                const spent =
+                  expensesByCategory.find(([name]) => name === category)?.[1] ?? 0
                 const limit = budgets[category] ?? 0
                 const ratio = limit > 0 ? Math.min((spent / limit) * 100, 100) : 0
                 return (
                   <div className="budget-row" key={category}>
                     <div className="budget-head">
-                      <span>{categoryLabel(category, t)}</span>
-                      <small>
+                      <span className="budget-name">{categoryLabel(category, t)}</span>
+                      <span className="budget-meta">
                         {currency(spent, locale)} /{' '}
                         {limit > 0 ? currency(limit, locale) : t('noLimit')}
-                      </small>
+                      </span>
                     </div>
-                    <input
-                      type="number"
-                      min="0"
-                      step="100"
-                      value={limit || ''}
-                      onChange={(e) => handleBudgetChange(category, e.target.value)}
-                      placeholder={t('setLimit')}
-                    />
-                    <div className="progress">
+                    <label className="budget-limit-label">
+                      <span className="visually-hidden">{t('setLimit')}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="100"
+                        value={limit || ''}
+                        onChange={(e) => handleBudgetChange(category, e.target.value)}
+                        placeholder={t('setLimit')}
+                        aria-label={`${categoryLabel(category, t)} — ${t('setLimit')}`}
+                      />
+                    </label>
+                    <div className="progress" role="presentation">
                       <div style={{ width: `${ratio}%` }} />
                     </div>
                   </div>
                 )
-              },
-            )}
+              })}
+            </div>
           </div>
-        </article>
-      </section>
+        </section>
 
-      <section className="grid">
-        <article className="panel">
-          <div className="panel-header">
-            <h2>{t('expenseAnalytics')}</h2>
+        <section className="page-section" aria-labelledby="insights-heading">
+          <div className="section-heading">
+            <h2 id="insights-heading" className="section-title">
+              {t('sectionInsightsTitle')}
+            </h2>
           </div>
-          {expensesByCategory.length === 0 ? (
-            <p className="muted">{t('noExpensesMonth')}</p>
-          ) : (
-            <ul className="analytics">
-              {expensesByCategory.map(([name, value]) => (
-                <li key={name}>
-                  <span>{categoryLabel(name, t)}</span>
-                  <strong>{currency(value, locale)}</strong>
-                </li>
-              ))}
-            </ul>
-          )}
-        </article>
 
-        <article className="panel">
-          <div className="panel-header">
-            <h2>{t('transactions')}</h2>
+          <div className="insights-grid">
+            <article className="panel panel--sub">
+              <h3 className="panel-subtitle">{t('expenseAnalytics')}</h3>
+              <p className="panel-lead muted">{t('sectionAnalyticsDesc')}</p>
+              {expensesByCategory.length === 0 ? (
+                <p className="empty-state">{t('emptyAnalyticsLong')}</p>
+              ) : (
+                <ul className="analytics">
+                  {expensesByCategory.map(([name, value]) => (
+                    <li key={name}>
+                      <span>{categoryLabel(name, t)}</span>
+                      <strong>{currency(value, locale)}</strong>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+
+            <article className="panel panel--sub">
+              <h3 className="panel-subtitle">{t('transactions')}</h3>
+              <p className="panel-lead muted">{t('sectionTransactionsDesc')}</p>
+              {monthTransactions.length === 0 ? (
+                <p className="empty-state">{t('emptyTransactionsLong')}</p>
+              ) : (
+                <ul className="transactions">
+                  {monthTransactions.map((item) => (
+                    <li key={item.id}>
+                      <div className="txn-main">
+                        <span className="txn-title">{categoryLabel(item.category, t)}</span>
+                        <span className="txn-meta">
+                          {formatDisplayDate(item.date, locale)}
+                          {item.note ? ` — ${item.note}` : ''}
+                        </span>
+                      </div>
+                      <div className="row-actions">
+                        <span
+                          className={`txn-amount ${item.type === 'income' ? 'ok' : 'danger'}`}
+                        >
+                          {item.type === 'income' ? '+' : '-'}
+                          {currency(item.amount, locale)}
+                        </span>
+                        <button type="button" onClick={() => handleDeleteTransaction(item.id)}>
+                          {t('delete')}
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
           </div>
-          {monthTransactions.length === 0 ? (
-            <p className="muted">{t('noTransactionsMonth')}</p>
-          ) : (
-            <ul className="transactions">
-              {monthTransactions.map((item) => (
-                <li key={item.id}>
-                  <div>
-                    <strong>{categoryLabel(item.category, t)}</strong>
-                    <small>
-                      {formatDisplayDate(item.date, locale)}
-                      {item.note ? ` — ${item.note}` : ''}
-                    </small>
-                  </div>
-                  <div className="row-actions">
-                    <span className={item.type === 'income' ? 'ok' : 'danger'}>
-                      {item.type === 'income' ? '+' : '-'}
-                      {currency(item.amount, locale)}
-                    </span>
-                    <button type="button" onClick={() => handleDeleteTransaction(item.id)}>
-                      {t('delete')}
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </article>
-      </section>
-    </main>
+        </section>
+      </main>
+    </div>
   )
 }
 

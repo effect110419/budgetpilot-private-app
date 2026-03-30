@@ -24,6 +24,26 @@ export type MonthKey =
 export type MessageKey =
   | 'appTitle'
   | 'appTagline'
+  | 'heroLead'
+  | 'toolbarPeriod'
+  | 'toolbarDisplay'
+  | 'sectionSummaryTitle'
+  | 'sectionSummaryDesc'
+  | 'kpiCardIncomeSub'
+  | 'kpiCardExpenseSub'
+  | 'kpiCardBalanceSub'
+  | 'sectionEntryTitle'
+  | 'sectionEntryDesc'
+  | 'hintAmount'
+  | 'hintDate'
+  | 'hintCategory'
+  | 'sectionBudgetTitle'
+  | 'sectionBudgetDesc'
+  | 'sectionInsightsTitle'
+  | 'sectionAnalyticsDesc'
+  | 'sectionTransactionsDesc'
+  | 'emptyAnalyticsLong'
+  | 'emptyTransactionsLong'
   | 'monthLabel'
   | 'yearLabel'
   | 'summaryIncome'
@@ -66,6 +86,32 @@ export type MessageKey =
 const en: Record<MessageKey, string> = {
   appTitle: 'BudgetPilot',
   appTagline: 'Track income, expenses, and monthly limits in one place.',
+  heroLead:
+    'See what you earned and spent each month, set limits per category, and keep a clear history — without spreadsheets.',
+  toolbarPeriod: 'Reporting period',
+  toolbarDisplay: 'Display',
+  sectionSummaryTitle: 'This month at a glance',
+  sectionSummaryDesc:
+    'These three numbers include only operations whose date falls in the month you selected in the bar above.',
+  kpiCardIncomeSub: 'Total money received this month',
+  kpiCardExpenseSub: 'Total money spent this month',
+  kpiCardBalanceSub: 'What is left after expenses',
+  sectionEntryTitle: 'Add an income or expense',
+  sectionEntryDesc:
+    'Each line is one movement of money. Fill in the form and save — the summary and reports below update automatically.',
+  hintAmount: 'In rubles, whole numbers.',
+  hintDate: 'Use the day the payment actually happened.',
+  hintCategory: 'Used for budgets and the spending chart.',
+  sectionBudgetTitle: 'Monthly limits by category',
+  sectionBudgetDesc:
+    'For spending categories only: set how much you are willing to spend this month. We compare it to your actual expenses and show progress.',
+  sectionInsightsTitle: 'Analysis and history',
+  sectionAnalyticsDesc: 'Share of spending by category for the selected month.',
+  sectionTransactionsDesc: 'Every entry you saved for this month, newest first.',
+  emptyAnalyticsLong:
+    'There are no expenses for this month yet. Add expenses in the form above — the chart will appear here.',
+  emptyTransactionsLong:
+    'No entries for this month. Add your first income or expense — it will show up in this list.',
   monthLabel: 'Month',
   yearLabel: 'Year',
   summaryIncome: 'Income',
@@ -120,6 +166,32 @@ const en: Record<MessageKey, string> = {
 const ru: Record<MessageKey, string> = {
   appTitle: 'BudgetPilot',
   appTagline: 'Доходы, расходы и месячные лимиты в одном месте.',
+  heroLead:
+    'Понимайте, сколько пришло и ушло за месяц, задавайте лимиты по категориям и ведите историю — без таблиц и формул.',
+  toolbarPeriod: 'Период отчёта',
+  toolbarDisplay: 'Оформление',
+  sectionSummaryTitle: 'Сводка за выбранный месяц',
+  sectionSummaryDesc:
+    'Эти три цифры считаются только по операциям, у которых дата попадает в месяц, выбранный в панели выше.',
+  kpiCardIncomeSub: 'Всего поступило за месяц',
+  kpiCardExpenseSub: 'Всего потрачено за месяц',
+  kpiCardBalanceSub: 'Остаток после расходов',
+  sectionEntryTitle: 'Добавить доход или расход',
+  sectionEntryDesc:
+    'Одна строка — одно движение денег. Заполните поля и сохраните: сводка и отчёты ниже обновятся сами.',
+  hintAmount: 'Сумма в рублях, без копеек.',
+  hintDate: 'День, когда платёж реально прошёл.',
+  hintCategory: 'Нужна для бюджетов и диаграммы расходов.',
+  sectionBudgetTitle: 'Лимиты по категориям расходов',
+  sectionBudgetDesc:
+    'Только для категорий расходов: задайте потолок на месяц. Мы сравним его с фактом и покажем прогресс.',
+  sectionInsightsTitle: 'Аналитика и список',
+  sectionAnalyticsDesc: 'Доля расходов по категориям за выбранный месяц.',
+  sectionTransactionsDesc: 'Все сохранённые операции за этот месяц, сначала новые.',
+  emptyAnalyticsLong:
+    'За этот месяц ещё нет расходов. Добавьте расходы в форме выше — здесь появится диаграмма.',
+  emptyTransactionsLong:
+    'За этот месяц пока пусто. Добавьте первую операцию — она появится в этом списке.',
   monthLabel: 'Месяц',
   yearLabel: 'Год',
   summaryIncome: 'Доходы',
