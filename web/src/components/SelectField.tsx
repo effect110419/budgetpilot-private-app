@@ -77,7 +77,9 @@ export default function SelectField({
 
   const close = useCallback(() => {
     setOpen(false)
-    requestAnimationFrame(() => btnRef.current?.focus())
+    requestAnimationFrame(() =>
+      btnRef.current?.focus({ preventScroll: true }),
+    )
   }, [])
 
   const pick = useCallback(
@@ -96,14 +98,22 @@ export default function SelectField({
 
   useEffect(() => {
     if (!open) return
-    const id = requestAnimationFrame(() => listRef.current?.focus())
+    const id = requestAnimationFrame(() =>
+      listRef.current?.focus({ preventScroll: true }),
+    )
     return () => cancelAnimationFrame(id)
   }, [open])
 
   useEffect(() => {
     if (!open) return
-    const el = listRef.current?.querySelector<HTMLElement>(`[data-index="${highlight}"]`)
-    el?.scrollIntoView({ block: 'nearest' })
+    const menu = listRef.current
+    if (!menu) return
+    const el = menu.querySelector<HTMLElement>(`[data-index="${highlight}"]`)
+    if (!el) return
+    const mr = menu.getBoundingClientRect()
+    const er = el.getBoundingClientRect()
+    if (er.top < mr.top) menu.scrollTop += er.top - mr.top
+    else if (er.bottom > mr.bottom) menu.scrollTop += er.bottom - mr.bottom
   }, [highlight, open])
 
   useEffect(() => {

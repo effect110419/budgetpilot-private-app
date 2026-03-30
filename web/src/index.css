@@ -134,7 +134,8 @@ html[data-theme='dark'] body {
   box-shadow: var(--shadow-md);
   padding: var(--space-4);
   margin-bottom: var(--space-4);
-  overflow: hidden;
+  /* allow dropdowns to paint outside; do not clip or create scroll quirks */
+  overflow: visible;
 }
 
 .hero::before {
@@ -460,7 +461,10 @@ html[data-theme='dark'] body {
   border-radius: var(--radius-menu);
   box-shadow: var(--shadow-dropdown);
   overflow-y: auto;
+  overflow-x: hidden;
   outline: none;
+  /* scroll only inside menu; never chain-scroll the page */
+  overscroll-behavior: contain;
 }
 
 .select-field__menu:focus-visible {
