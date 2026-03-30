@@ -3,9 +3,11 @@ import type { FormEvent } from 'react'
 import {
   LOCALE_OPTIONS,
   categoryLabel,
+  monthMessageKey,
   type Locale,
 } from './i18n/locales'
 import { useI18n } from './i18n/I18nProvider'
+import { useTheme } from './theme/ThemeProvider'
 
 type TransactionType = 'income' | 'expense'
 
@@ -34,6 +36,32 @@ const DEFAULT_CATEGORIES = [
 
 const STORAGE_KEY = 'budgetpilot_v1'
 
+let cachedStored: { transactions: Transaction[]; budgets: BudgetMap } | null = null
+
+function getStoredSnapshot(): { transactions: Transaction[]; budgets: BudgetMap } {
+  if (cachedStored) return cachedStored
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (!saved) {
+      cachedStored = { transactions: [], budgets: {} }
+      return cachedStored
+    }
+    const parsed = JSON.parse(saved) as {
+      transactions?: Transaction[]
+      budgets?: BudgetMap
+    }
+    cachedStored = {
+      transactions: parsed.transactions ?? [],
+      budgets: parsed.budgets ?? {},
+    }
+    return cachedStored
+  } catch {
+    localStorage.removeItem(STORAGE_KEY)
+    cachedStored = { transactions: [], budgets: {} }
+    return cachedStored
+  }
+}
+
 function toMonthKey(date: string): string {
   return date.slice(0, 7)
 }
@@ -46,13 +74,58 @@ function currency(value: number, locale: Locale): string {
   }).format(value)
 }
 
+function formatDisplayDate(iso: string, locale: Locale): string {
+  const parts = iso.split('-').map(Number)
+  const y = parts[0]
+  const m = parts[1]
+  const d = parts[2]
+  if (!y || !m || !d) return iso
+  const date = new Date(y, m - 1, d)
+  return new Intl.DateTimeFormat(locale === 'ru' ? 'ru-RU' : 'en-US', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+}
+
+function MoonIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function SunIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
 function App() {
   const { locale, setLocale, t } = useI18n()
+  const { theme, toggleTheme } = useTheme()
   const today = new Date().toISOString().slice(0, 10)
   const currentMonth = new Date().toISOString().slice(0, 7)
 
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [budgets, setBudgets] = useState<BudgetMap>({})
+  const [transactions, setTransactions] = useState<Transaction[]>(
+    () => getStoredSnapshot().transactions,
+  )
+  const [budgets, setBudgets] = useState<BudgetMap>(() => getStoredSnapshot().budgets)
   const [selectedMonth, setSelectedMonth] = useState(currentMonth)
   const [form, setForm] = useState({
     type: 'expense' as TransactionType,
@@ -62,20 +135,13 @@ function App() {
     note: '',
   })
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (!saved) return
-    try {
-      const parsed = JSON.parse(saved) as {
-        transactions: Transaction[]
-        budgets: BudgetMap
-      }
-      setTransactions(parsed.transactions ?? [])
-      setBudgets(parsed.budgets ?? {})
-    } catch {
-      localStorage.removeItem(STORAGE_KEY)
-    }
+  const yearOptions = useMemo(() => {
+    const cy = new Date().getFullYear()
+    return Array.from({ length: 14 }, (_, i) => cy - 5 + i)
   }, [])
+
+  const selectedYear = selectedMonth.slice(0, 4)
+  const selectedMonthPart = selectedMonth.slice(5, 7)
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ transactions, budgets }))
@@ -153,12 +219,22 @@ function App() {
       <header className="top">
         <div>
           <h1>{t('appTitle')}</h1>
-          <p>{t('appTagline')}</p>
+          <p className="tagline">{t('appTagline')}</p>
         </div>
         <div className="top-actions">
-          <label className="lang-picker">
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={t('themeToggle')}
+            title={theme === 'light' ? t('themeDark') : t('themeLight')}
+          >
+            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+          </button>
+          <label className="field-stack">
             <span>{t('language')}</span>
             <select
+              className="select-input"
               value={locale}
               onChange={(e) => setLocale(e.target.value as Locale)}
               aria-label={t('language')}
@@ -170,14 +246,43 @@ function App() {
               ))}
             </select>
           </label>
-          <label className="month-picker">
-            <span>{t('monthLabel')}</span>
-            <input
-              type="month"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-            />
-          </label>
+          <div className="month-picker-group" role="group" aria-label={t('monthLabel')}>
+            <label className="field-stack">
+              <span>{t('monthLabel')}</span>
+              <select
+                className="select-input"
+                value={selectedMonthPart}
+                onChange={(e) =>
+                  setSelectedMonth(`${selectedYear}-${e.target.value}`)
+                }
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
+                  const v = String(m).padStart(2, '0')
+                  return (
+                    <option key={m} value={v}>
+                      {t(monthMessageKey(m))}
+                    </option>
+                  )
+                })}
+              </select>
+            </label>
+            <label className="field-stack">
+              <span>{t('yearLabel')}</span>
+              <select
+                className="select-input"
+                value={selectedYear}
+                onChange={(e) =>
+                  setSelectedMonth(`${e.target.value}-${selectedMonthPart}`)
+                }
+              >
+                {yearOptions.map((y) => (
+                  <option key={y} value={String(y)}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
       </header>
 
@@ -200,11 +305,14 @@ function App() {
 
       <section className="grid">
         <article className="panel">
-          <h2>{t('addTransaction')}</h2>
+          <div className="panel-header">
+            <h2>{t('addTransaction')}</h2>
+          </div>
           <form className="form" onSubmit={handleAddTransaction}>
             <label>
               {t('type')}
               <select
+                className="select-input"
                 value={form.type}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, type: e.target.value as TransactionType }))
@@ -231,6 +339,7 @@ function App() {
             <label>
               {t('category')}
               <select
+                className="select-input"
                 value={form.category}
                 onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
                 required
@@ -256,6 +365,7 @@ function App() {
             <label>
               {t('note')}
               <input
+                type="text"
                 value={form.note}
                 onChange={(e) => setForm((prev) => ({ ...prev, note: e.target.value }))}
                 placeholder={t('optional')}
@@ -267,8 +377,10 @@ function App() {
         </article>
 
         <article className="panel">
-          <h2>{t('categoryBudgets')}</h2>
-          <p className="muted">{t('categoryBudgetsHint')}</p>
+          <div className="panel-header">
+            <h2>{t('categoryBudgets')}</h2>
+            <p className="muted">{t('categoryBudgetsHint')}</p>
+          </div>
           <div className="budget-list">
             {DEFAULT_CATEGORIES.filter((item) => item !== 'Salary' && item !== 'Freelance').map(
               (category) => {
@@ -305,7 +417,9 @@ function App() {
 
       <section className="grid">
         <article className="panel">
-          <h2>{t('expenseAnalytics')}</h2>
+          <div className="panel-header">
+            <h2>{t('expenseAnalytics')}</h2>
+          </div>
           {expensesByCategory.length === 0 ? (
             <p className="muted">{t('noExpensesMonth')}</p>
           ) : (
@@ -321,7 +435,9 @@ function App() {
         </article>
 
         <article className="panel">
-          <h2>{t('transactions')}</h2>
+          <div className="panel-header">
+            <h2>{t('transactions')}</h2>
+          </div>
           {monthTransactions.length === 0 ? (
             <p className="muted">{t('noTransactionsMonth')}</p>
           ) : (
@@ -331,8 +447,8 @@ function App() {
                   <div>
                     <strong>{categoryLabel(item.category, t)}</strong>
                     <small>
-                      {item.date}
-                      {item.note ? ` - ${item.note}` : ''}
+                      {formatDisplayDate(item.date, locale)}
+                      {item.note ? ` — ${item.note}` : ''}
                     </small>
                   </div>
                   <div className="row-actions">

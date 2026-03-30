@@ -7,10 +7,25 @@ export const LOCALE_OPTIONS: { value: Locale; label: string }[] = [
   { value: 'ru', label: 'Русский' },
 ]
 
+export type MonthKey =
+  | 'month_1'
+  | 'month_2'
+  | 'month_3'
+  | 'month_4'
+  | 'month_5'
+  | 'month_6'
+  | 'month_7'
+  | 'month_8'
+  | 'month_9'
+  | 'month_10'
+  | 'month_11'
+  | 'month_12'
+
 export type MessageKey =
   | 'appTitle'
   | 'appTagline'
   | 'monthLabel'
+  | 'yearLabel'
   | 'summaryIncome'
   | 'summaryExpenses'
   | 'summaryBalance'
@@ -34,6 +49,9 @@ export type MessageKey =
   | 'noTransactionsMonth'
   | 'delete'
   | 'language'
+  | 'themeLight'
+  | 'themeDark'
+  | 'themeToggle'
   | 'category_salary'
   | 'category_freelance'
   | 'category_food'
@@ -43,11 +61,13 @@ export type MessageKey =
   | 'category_entertainment'
   | 'category_shopping'
   | 'category_other'
+  | MonthKey
 
 const en: Record<MessageKey, string> = {
   appTitle: 'BudgetPilot',
   appTagline: 'Track income, expenses, and monthly limits in one place.',
   monthLabel: 'Month',
+  yearLabel: 'Year',
   summaryIncome: 'Income',
   summaryExpenses: 'Expenses',
   summaryBalance: 'Balance',
@@ -71,6 +91,9 @@ const en: Record<MessageKey, string> = {
   noTransactionsMonth: 'No transactions for selected month.',
   delete: 'Delete',
   language: 'Language',
+  themeLight: 'Light theme',
+  themeDark: 'Dark theme',
+  themeToggle: 'Toggle color theme',
   category_salary: 'Salary',
   category_freelance: 'Freelance',
   category_food: 'Food',
@@ -80,12 +103,25 @@ const en: Record<MessageKey, string> = {
   category_entertainment: 'Entertainment',
   category_shopping: 'Shopping',
   category_other: 'Other',
+  month_1: 'January',
+  month_2: 'February',
+  month_3: 'March',
+  month_4: 'April',
+  month_5: 'May',
+  month_6: 'June',
+  month_7: 'July',
+  month_8: 'August',
+  month_9: 'September',
+  month_10: 'October',
+  month_11: 'November',
+  month_12: 'December',
 }
 
 const ru: Record<MessageKey, string> = {
   appTitle: 'BudgetPilot',
   appTagline: 'Доходы, расходы и месячные лимиты в одном месте.',
   monthLabel: 'Месяц',
+  yearLabel: 'Год',
   summaryIncome: 'Доходы',
   summaryExpenses: 'Расходы',
   summaryBalance: 'Баланс',
@@ -109,6 +145,9 @@ const ru: Record<MessageKey, string> = {
   noTransactionsMonth: 'Нет операций за выбранный месяц.',
   delete: 'Удалить',
   language: 'Язык',
+  themeLight: 'Светлая тема',
+  themeDark: 'Тёмная тема',
+  themeToggle: 'Переключить тему',
   category_salary: 'Зарплата',
   category_freelance: 'Фриланс',
   category_food: 'Еда',
@@ -118,9 +157,27 @@ const ru: Record<MessageKey, string> = {
   category_entertainment: 'Развлечения',
   category_shopping: 'Покупки',
   category_other: 'Другое',
+  month_1: 'Январь',
+  month_2: 'Февраль',
+  month_3: 'Март',
+  month_4: 'Апрель',
+  month_5: 'Май',
+  month_6: 'Июнь',
+  month_7: 'Июль',
+  month_8: 'Август',
+  month_9: 'Сентябрь',
+  month_10: 'Октябрь',
+  month_11: 'Ноябрь',
+  month_12: 'Декабрь',
 }
 
 export const messages: Record<Locale, Record<MessageKey, string>> = { en, ru }
+
+export function monthMessageKey(monthIndex1to12: number): MonthKey {
+  const n = Math.floor(monthIndex1to12)
+  if (n >= 1 && n <= 12) return `month_${n}` as MonthKey
+  return 'month_1'
+}
 
 /** Stored category id (English) → message key for display */
 export const CATEGORY_TO_KEY: Record<string, MessageKey> = {
