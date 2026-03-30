@@ -28,6 +28,30 @@ body {
   justify-content: space-between;
   align-items: end;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.top-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+}
+
+.lang-picker {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.lang-picker select {
+  min-width: 128px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font: inherit;
 }
 
 h1 {

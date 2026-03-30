@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import {
+  LOCALE_OPTIONS,
+  categoryLabel,
+  type Locale,
+} from './i18n/locales'
+import { useI18n } from './i18n/I18nProvider'
 
 type TransactionType = 'income' | 'expense'
 
@@ -32,8 +38,8 @@ function toMonthKey(date: string): string {
   return date.slice(0, 7)
 }
 
-function currency(value: number): string {
-  return new Intl.NumberFormat('ru-RU', {
+function currency(value: number, locale: Locale): string {
+  return new Intl.NumberFormat(locale === 'ru' ? 'ru-RU' : 'en-US', {
     style: 'currency',
     currency: 'RUB',
     maximumFractionDigits: 0,
@@ -41,6 +47,7 @@ function currency(value: number): string {
 }
 
 function App() {
+  const { locale, setLocale, t } = useI18n()
   const today = new Date().toISOString().slice(0, 10)
   const currentMonth = new Date().toISOString().slice(0, 7)
 
@@ -82,16 +89,16 @@ function App() {
   const totalIncome = useMemo(
     () =>
       monthTransactions
-        .filter((t) => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0),
+        .filter((trx) => trx.type === 'income')
+        .reduce((sum, trx) => sum + trx.amount, 0),
     [monthTransactions],
   )
 
   const totalExpense = useMemo(
     () =>
       monthTransactions
-        .filter((t) => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0),
+        .filter((trx) => trx.type === 'expense')
+        .reduce((sum, trx) => sum + trx.amount, 0),
     [monthTransactions],
   )
 
@@ -145,53 +152,71 @@ function App() {
     <main className="app">
       <header className="top">
         <div>
-          <h1>BudgetPilot</h1>
-          <p>Track income, expenses, and monthly limits in one place.</p>
+          <h1>{t('appTitle')}</h1>
+          <p>{t('appTagline')}</p>
         </div>
-        <label className="month-picker">
-          <span>Month</span>
-          <input
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-          />
-        </label>
+        <div className="top-actions">
+          <label className="lang-picker">
+            <span>{t('language')}</span>
+            <select
+              value={locale}
+              onChange={(e) => setLocale(e.target.value as Locale)}
+              aria-label={t('language')}
+            >
+              {LOCALE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="month-picker">
+            <span>{t('monthLabel')}</span>
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            />
+          </label>
+        </div>
       </header>
 
       <section className="cards">
         <article className="card">
-          <h2>Income</h2>
-          <strong className="ok">{currency(totalIncome)}</strong>
+          <h2>{t('summaryIncome')}</h2>
+          <strong className="ok">{currency(totalIncome, locale)}</strong>
         </article>
         <article className="card">
-          <h2>Expenses</h2>
-          <strong className="danger">{currency(totalExpense)}</strong>
+          <h2>{t('summaryExpenses')}</h2>
+          <strong className="danger">{currency(totalExpense, locale)}</strong>
         </article>
         <article className="card">
-          <h2>Balance</h2>
-          <strong className={balance >= 0 ? 'ok' : 'danger'}>{currency(balance)}</strong>
+          <h2>{t('summaryBalance')}</h2>
+          <strong className={balance >= 0 ? 'ok' : 'danger'}>
+            {currency(balance, locale)}
+          </strong>
         </article>
       </section>
 
       <section className="grid">
         <article className="panel">
-          <h2>Add transaction</h2>
+          <h2>{t('addTransaction')}</h2>
           <form className="form" onSubmit={handleAddTransaction}>
             <label>
-              Type
+              {t('type')}
               <select
                 value={form.type}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, type: e.target.value as TransactionType }))
                 }
               >
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
+                <option value="expense">{t('typeExpense')}</option>
+                <option value="income">{t('typeIncome')}</option>
               </select>
             </label>
 
             <label>
-              Amount
+              {t('amount')}
               <input
                 type="number"
                 min="1"
@@ -204,22 +229,22 @@ function App() {
             </label>
 
             <label>
-              Category
-              <input
-                list="categories"
+              {t('category')}
+              <select
                 value={form.category}
                 onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
                 required
-              />
-              <datalist id="categories">
+              >
                 {DEFAULT_CATEGORIES.map((item) => (
-                  <option value={item} key={item} />
+                  <option key={item} value={item}>
+                    {categoryLabel(item, t)}
+                  </option>
                 ))}
-              </datalist>
+              </select>
             </label>
 
             <label>
-              Date
+              {t('date')}
               <input
                 type="date"
                 value={form.date}
@@ -229,21 +254,21 @@ function App() {
             </label>
 
             <label>
-              Note
+              {t('note')}
               <input
                 value={form.note}
                 onChange={(e) => setForm((prev) => ({ ...prev, note: e.target.value }))}
-                placeholder="Optional"
+                placeholder={t('optional')}
               />
             </label>
 
-            <button type="submit">Save transaction</button>
+            <button type="submit">{t('saveTransaction')}</button>
           </form>
         </article>
 
         <article className="panel">
-          <h2>Category budgets</h2>
-          <p className="muted">Set monthly budget per expense category.</p>
+          <h2>{t('categoryBudgets')}</h2>
+          <p className="muted">{t('categoryBudgetsHint')}</p>
           <div className="budget-list">
             {DEFAULT_CATEGORIES.filter((item) => item !== 'Salary' && item !== 'Freelance').map(
               (category) => {
@@ -253,9 +278,10 @@ function App() {
                 return (
                   <div className="budget-row" key={category}>
                     <div className="budget-head">
-                      <span>{category}</span>
+                      <span>{categoryLabel(category, t)}</span>
                       <small>
-                        {currency(spent)} / {limit > 0 ? currency(limit) : 'No limit'}
+                        {currency(spent, locale)} /{' '}
+                        {limit > 0 ? currency(limit, locale) : t('noLimit')}
                       </small>
                     </div>
                     <input
@@ -264,7 +290,7 @@ function App() {
                       step="100"
                       value={limit || ''}
                       onChange={(e) => handleBudgetChange(category, e.target.value)}
-                      placeholder="Set limit"
+                      placeholder={t('setLimit')}
                     />
                     <div className="progress">
                       <div style={{ width: `${ratio}%` }} />
@@ -279,15 +305,15 @@ function App() {
 
       <section className="grid">
         <article className="panel">
-          <h2>Expense analytics</h2>
+          <h2>{t('expenseAnalytics')}</h2>
           {expensesByCategory.length === 0 ? (
-            <p className="muted">No expenses for selected month.</p>
+            <p className="muted">{t('noExpensesMonth')}</p>
           ) : (
             <ul className="analytics">
               {expensesByCategory.map(([name, value]) => (
                 <li key={name}>
-                  <span>{name}</span>
-                  <strong>{currency(value)}</strong>
+                  <span>{categoryLabel(name, t)}</span>
+                  <strong>{currency(value, locale)}</strong>
                 </li>
               ))}
             </ul>
@@ -295,15 +321,15 @@ function App() {
         </article>
 
         <article className="panel">
-          <h2>Transactions</h2>
+          <h2>{t('transactions')}</h2>
           {monthTransactions.length === 0 ? (
-            <p className="muted">No transactions for selected month.</p>
+            <p className="muted">{t('noTransactionsMonth')}</p>
           ) : (
             <ul className="transactions">
               {monthTransactions.map((item) => (
                 <li key={item.id}>
                   <div>
-                    <strong>{item.category}</strong>
+                    <strong>{categoryLabel(item.category, t)}</strong>
                     <small>
                       {item.date}
                       {item.note ? ` - ${item.note}` : ''}
@@ -312,10 +338,10 @@ function App() {
                   <div className="row-actions">
                     <span className={item.type === 'income' ? 'ok' : 'danger'}>
                       {item.type === 'income' ? '+' : '-'}
-                      {currency(item.amount)}
+                      {currency(item.amount, locale)}
                     </span>
                     <button type="button" onClick={() => handleDeleteTransaction(item.id)}>
-                      Delete
+                      {t('delete')}
                     </button>
                   </div>
                 </li>
