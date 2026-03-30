@@ -26,7 +26,17 @@ Help people understand where money goes, plan budgets, and build sustainable fin
 - `docs/ROADMAP.md` - phased delivery plan
 - `docs/MVP_PLAN.md` - 30-day execution plan
 - `docs/MONETIZATION.md` - revenue model
+- `web/` - working web MVP (React + TypeScript + Vite)
 
 ## Status
 
-Planning phase completed. Ready for design and implementation.
+Web MVP is implemented and ready for local testing.
+
+## Run Web MVP
+
+1. Install Node.js LTS.
+2. Open terminal:
+   - `cd web`
+   - `npm install`
+   - `npm run dev`
+3. Open the local URL shown in terminal (usually `http://localhost:5173`).
