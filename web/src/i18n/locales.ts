@@ -44,6 +44,11 @@ export type MessageKey =
   | 'sectionTransactionsDesc'
   | 'emptyAnalyticsLong'
   | 'emptyTransactionsLong'
+  | 'navDashboard'
+  | 'navOperations'
+  | 'navBudgets'
+  | 'navAnalytics'
+  | 'navAria'
   | 'monthLabel'
   | 'yearLabel'
   | 'summaryIncome'
@@ -112,6 +117,11 @@ const en: Record<MessageKey, string> = {
     'There are no expenses for this month yet. Add expenses in the form above — the chart will appear here.',
   emptyTransactionsLong:
     'No entries for this month. Add your first income or expense — it will show up in this list.',
+  navDashboard: 'Overview',
+  navOperations: 'Entries',
+  navBudgets: 'Budgets',
+  navAnalytics: 'Analytics',
+  navAria: 'Main sections',
   monthLabel: 'Month',
   yearLabel: 'Year',
   summaryIncome: 'Income',
@@ -192,6 +202,11 @@ const ru: Record<MessageKey, string> = {
     'За этот месяц ещё нет расходов. Добавьте расходы в форме выше — здесь появится диаграмма.',
   emptyTransactionsLong:
     'За этот месяц пока пусто. Добавьте первую операцию — она появится в этом списке.',
+  navDashboard: 'Сводка',
+  navOperations: 'Операции',
+  navBudgets: 'Бюджеты',
+  navAnalytics: 'Аналитика',
+  navAria: 'Разделы приложения',
   monthLabel: 'Месяц',
   yearLabel: 'Год',
   summaryIncome: 'Доходы',
