@@ -93,18 +93,20 @@ export default function AppLayout() {
           </div>
 
           <div className="toolbar-block toolbar-block--end">
-            <p className="toolbar-heading">{t('toolbarDisplay')}</p>
-            <div className="toolbar-row toolbar-row--compact">
-              <button
-                type="button"
-                className="theme-toggle"
-                onClick={toggleTheme}
-                aria-label={t('themeToggle')}
-                title={theme === 'light' ? t('themeDark') : t('themeLight')}
-              >
-                {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-              </button>
-              <label className="field-stack field-stack--grow">
+            <div className="toolbar-split">
+              <div className="toolbar-theme-group">
+                <span className="toolbar-inline-label">{t('toolbarDisplay')}</span>
+                <button
+                  type="button"
+                  className="theme-toggle"
+                  onClick={toggleTheme}
+                  aria-label={t('themeToggle')}
+                  title={theme === 'light' ? t('themeDark') : t('themeLight')}
+                >
+                  {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+                </button>
+              </div>
+              <label className="field-stack field-stack--lang">
                 <span className="field-stack-label">{t('language')}</span>
                 <select
                   className="select-input"

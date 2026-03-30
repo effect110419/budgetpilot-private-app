@@ -89,10 +89,10 @@ export type MessageKey =
   | MonthKey
 
 const en: Record<MessageKey, string> = {
-  appTitle: 'BudgetPilot',
+  appTitle: 'Moneta',
   appTagline: 'Track income, expenses, and monthly limits in one place.',
   heroLead:
-    'See what you earned and spent each month, set limits per category, and keep a clear history — without spreadsheets.',
+    'Income, spending, and monthly limits — clear and fast, no spreadsheets.',
   toolbarPeriod: 'Reporting period',
   toolbarDisplay: 'Display',
   sectionSummaryTitle: 'This month at a glance',
@@ -174,10 +174,9 @@ const en: Record<MessageKey, string> = {
 }
 
 const ru: Record<MessageKey, string> = {
-  appTitle: 'BudgetPilot',
+  appTitle: 'Монета',
   appTagline: 'Доходы, расходы и месячные лимиты в одном месте.',
-  heroLead:
-    'Понимайте, сколько пришло и ушло за месяц, задавайте лимиты по категориям и ведите историю — без таблиц и формул.',
+  heroLead: 'Доходы, расходы и лимиты за месяц — наглядно, без таблиц и формул.',
   toolbarPeriod: 'Период отчёта',
   toolbarDisplay: 'Оформление',
   sectionSummaryTitle: 'Сводка за выбранный месяц',
