@@ -38,20 +38,34 @@ body {
   align-items: end;
 }
 
-.lang-picker {
+.top-actions .lang-picker,
+.top-actions .month-picker {
   display: grid;
   gap: 6px;
   font-size: 14px;
   color: #4b5563;
 }
 
-.lang-picker select {
-  min-width: 128px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
+/* Same box size for language + month so the header controls look even */
+.top-actions select,
+.top-actions input[type='month'] {
+  box-sizing: border-box;
+  min-height: 44px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
   background: #fff;
   font: inherit;
+  font-size: 14px;
+  color: #1f2937;
+  min-width: 11rem;
+  max-width: 100%;
+}
+
+.top-actions input[type='month'] {
+  font-family: inherit;
+  line-height: 1.2;
 }
 
 h1 {
@@ -66,13 +80,6 @@ h2 {
 
 p {
   margin: 0;
-}
-
-.month-picker {
-  display: grid;
-  gap: 6px;
-  font-size: 14px;
-  color: #4b5563;
 }
 
 .cards {
