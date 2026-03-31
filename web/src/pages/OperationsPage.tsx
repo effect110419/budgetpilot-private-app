@@ -1,9 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, type FormEvent } from 'react'
 import { categoryLabel } from '../i18n/locales'
 import { useBudgetData } from '../data/BudgetDataContext'
 import type { Transaction, TransactionType } from '../data/budgetTypes'
-import { defaultCategoryForType } from '../data/budgetTypes'
-import { NOTE_MAX_LENGTH } from '../lib/validation'
+import { coerceCategoryForType, defaultCategoryForType } from '../data/budgetTypes'
+import {
+  clampMoneyAmount,
+  NOTE_MAX_LENGTH,
+  parseMoneyInput,
+} from '../lib/validation'
 import SelectField from '../components/SelectField'
 
 type TypeFilter = 'all' | TransactionType
@@ -19,9 +23,19 @@ export default function OperationsPage() {
     monthTransactions,
     handleAddTransaction,
     handleDeleteTransaction,
+    updateTransaction,
     currencyFmt,
     formatDate,
   } = useBudgetData()
+
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editDraft, setEditDraft] = useState({
+    type: 'expense' as TransactionType,
+    amount: '',
+    category: '',
+    date: '',
+    note: '',
+  })
 
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
@@ -47,6 +61,14 @@ export default function OperationsPage() {
       label: categoryLabel(item, t),
     }))
   }, [form.type, incomeCategories, expenseCategories, t])
+
+  const editCategoryOptions = useMemo(() => {
+    const list = editDraft.type === 'income' ? incomeCategories : expenseCategories
+    return list.map((item) => ({
+      value: item,
+      label: categoryLabel(item, t),
+    }))
+  }, [editDraft.type, incomeCategories, expenseCategories, t])
 
   const filterTypeOptions = useMemo(
     () => [
@@ -98,6 +120,52 @@ export default function OperationsPage() {
     })
     return sorted
   }, [monthTransactions, typeFilter, categoryFilter, sortKey])
+
+  /** Пока строка скрыта фильтром — форма не показывается; id сохраняем, чтобы вернуться к черновику при смене фильтра. */
+  const activeEditId = useMemo(() => {
+    if (!editingId) return null
+    return displayedTransactions.some((x) => x.id === editingId) ? editingId : null
+  }, [editingId, displayedTransactions])
+
+  const startEdit = useCallback((tr: Transaction) => {
+    setEditingId(tr.id)
+    setEditDraft({
+      type: tr.type,
+      amount: String(tr.amount),
+      category: coerceCategoryForType(tr.type, tr.category),
+      date: tr.date,
+      note: tr.note,
+    })
+  }, [])
+
+  const cancelEdit = useCallback(() => setEditingId(null), [])
+
+  const onEditTypeChange = (v: string) => {
+    const next = v as TransactionType
+    const list = next === 'income' ? incomeCategories : expenseCategories
+    setEditDraft((prev) => ({
+      ...prev,
+      type: next,
+      category: (list as readonly string[]).includes(prev.category)
+        ? prev.category
+        : defaultCategoryForType(next),
+    }))
+  }
+
+  const handleEditSubmit = (event: FormEvent) => {
+    event.preventDefault()
+    if (!editingId) return
+    const amount = clampMoneyAmount(parseMoneyInput(editDraft.amount))
+    if (amount <= 0) return
+    updateTransaction(editingId, {
+      type: editDraft.type,
+      amount,
+      category: editDraft.category.trim(),
+      date: editDraft.date,
+      note: editDraft.note.trim(),
+    })
+    setEditingId(null)
+  }
 
   return (
     <div className="page page--stack">
@@ -240,25 +308,113 @@ export default function OperationsPage() {
         ) : (
           <ul className="transactions">
             {displayedTransactions.map((item) => (
-              <li key={item.id}>
-                <div className="txn-main">
-                  <span className="txn-title">{categoryLabel(item.category, t)}</span>
-                  <span className="txn-meta">
-                    {formatDate(item.date)}
-                    {item.note ? ` — ${item.note}` : ''}
-                  </span>
-                </div>
-                <div className="row-actions">
-                  <span
-                    className={`txn-amount ${item.type === 'income' ? 'text-income' : 'text-expense'}`}
-                  >
-                    {item.type === 'income' ? '+' : '-'}
-                    {currencyFmt(item.amount)}
-                  </span>
-                  <button type="button" onClick={() => handleDeleteTransaction(item.id)}>
-                    {t('delete')}
-                  </button>
-                </div>
+              <li
+                key={item.id}
+                className={activeEditId === item.id ? 'transactions__item--editing' : undefined}
+              >
+                {activeEditId === item.id ? (
+                  <form className="txn-edit-form" onSubmit={handleEditSubmit}>
+                    <label className="form-field">
+                      <span className="form-field-label">{t('type')}</span>
+                      <SelectField
+                        value={editDraft.type}
+                        onChange={onEditTypeChange}
+                        options={typeOptions}
+                        ariaLabel={t('type')}
+                      />
+                    </label>
+                    <div className="form-grid form-grid--2">
+                      <label className="form-field">
+                        <span className="form-field-label">{t('amount')}</span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={editDraft.amount}
+                          onChange={(e) =>
+                            setEditDraft((prev) => ({ ...prev, amount: e.target.value }))
+                          }
+                          required
+                          autoComplete="off"
+                        />
+                      </label>
+                      <label className="form-field">
+                        <span className="form-field-label">{t('category')}</span>
+                        <SelectField
+                          value={editDraft.category}
+                          onChange={(v) => setEditDraft((prev) => ({ ...prev, category: v }))}
+                          options={editCategoryOptions}
+                          ariaLabel={t('category')}
+                          menuMaxHeight={320}
+                        />
+                      </label>
+                    </div>
+                    <div className="form-grid form-grid--2">
+                      <label className="form-field">
+                        <span className="form-field-label">{t('date')}</span>
+                        <input
+                          type="date"
+                          value={editDraft.date}
+                          onChange={(e) =>
+                            setEditDraft((prev) => ({ ...prev, date: e.target.value }))
+                          }
+                          required
+                        />
+                      </label>
+                      <label className="form-field">
+                        <span className="form-field-label">{t('note')}</span>
+                        <input
+                          type="text"
+                          value={editDraft.note}
+                          maxLength={NOTE_MAX_LENGTH}
+                          onChange={(e) =>
+                            setEditDraft((prev) => ({ ...prev, note: e.target.value }))
+                          }
+                          placeholder={t('optional')}
+                          autoComplete="off"
+                        />
+                      </label>
+                    </div>
+                    <div className="form-actions txn-edit-form__actions">
+                      <button type="submit" className="btn-primary">
+                        {t('saveEdit')}
+                      </button>
+                      <button type="button" className="btn-cancel" onClick={cancelEdit}>
+                        {t('cancelEdit')}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div className="txn-main">
+                      <span className="txn-badge">
+                        {item.type === 'income' ? t('typeIncome') : t('typeExpense')}
+                      </span>
+                      <span className="txn-title">{categoryLabel(item.category, t)}</span>
+                      <span className="txn-meta">
+                        {formatDate(item.date)}
+                        {item.note ? ` — ${item.note}` : ''}
+                      </span>
+                    </div>
+                    <div className="row-actions">
+                      <span
+                        className={`txn-amount ${item.type === 'income' ? 'text-income' : 'text-expense'}`}
+                      >
+                        {item.type === 'income' ? '+' : '-'}
+                        {currencyFmt(item.amount)}
+                      </span>
+                      <button
+                        type="button"
+                        className="row-actions__edit"
+                        onClick={() => startEdit(item)}
+                      >
+                        {t('edit')}
+                      </button>
+                      <button type="button" onClick={() => handleDeleteTransaction(item.id)}>
+                        {t('delete')}
+                      </button>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>
