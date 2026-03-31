@@ -26,6 +26,9 @@ Help people understand where money goes, plan budgets, and build sustainable fin
 - `docs/ROADMAP.md` - phased delivery plan
 - `docs/MVP_PLAN.md` - 30-day execution plan
 - `docs/MONETIZATION.md` - revenue model
+- `docs/PLATFORM_AUTH_DB_HOSTING.md` - architecture (auth, DB, hosting)
+- `docs/SUPABASE_SETUP_RU.md` - **пошаговая настройка облака и входа (RU)**
+- `supabase/migrations/` - SQL для PostgreSQL (Supabase)
 - `web/` - working web MVP (React + TypeScript + Vite)
 
 ## Status
@@ -38,5 +41,10 @@ Web MVP is implemented and ready for local testing.
 2. Open terminal:
    - `cd web`
    - `npm install`
+   - (Optional cloud sync) Copy `web/.env.example` to `web/.env.local` and add Supabase URL + anon key — see **`docs/SUPABASE_SETUP_RU.md`**.
    - `npm run dev`
+   - `npm run lint` — check TypeScript/React code style (optional before commit).
+   - `npm run build` — production build.
 3. Open the local URL shown in terminal (usually `http://localhost:5173`).
+
+Without `.env.local`, the app uses **local storage only** (same as before). With Supabase keys, you get **sign-in** and **cloud sync** for transactions and budgets.

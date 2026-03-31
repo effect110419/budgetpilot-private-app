@@ -4,16 +4,14 @@ import { useBudgetData } from '../data/BudgetDataContext'
 export default function BudgetsPage() {
   const {
     t,
-    defaultCategories,
+    expenseCategories,
     expensesByCategory,
     budgets,
     handleBudgetChange,
     currencyFmt,
   } = useBudgetData()
 
-  const expenseCats = defaultCategories.filter(
-    (item) => item !== 'Salary' && item !== 'Freelance',
-  )
+  const expenseCats = expenseCategories
 
   return (
     <div className="page">

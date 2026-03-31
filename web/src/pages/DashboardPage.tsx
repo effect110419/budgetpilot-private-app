@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useBudgetData } from '../data/BudgetDataContext'
 
 export default function DashboardPage() {
@@ -9,7 +10,10 @@ export default function DashboardPage() {
     totalExpense,
     balance,
     currencyFmt,
+    overBudgetCategories,
   } = useBudgetData()
+
+  const overBudget = overBudgetCategories.length > 0
 
   return (
     <div className="page">
@@ -21,18 +25,36 @@ export default function DashboardPage() {
         <p className="section-desc">{t('sectionSummaryDesc')}</p>
       </div>
 
+      {overBudget && (
+        <div className="dashboard-alert panel" role="status">
+          <p className="dashboard-alert__text">{t('dashboardOverBudgetBanner')}</p>
+          <Link className="btn-primary dashboard-alert__cta" to="/budgets">
+            {t('dashboardOverBudgetLink')}
+          </Link>
+        </div>
+      )}
+
       <div className="stat-cards">
-        <article className="stat-card stat-card--income">
+        <Link
+          className="stat-card stat-card--income stat-card--link"
+          to="/income"
+        >
           <h2 className="stat-card__title">{t('summaryIncome')}</h2>
           <p className="stat-card__hint">{t('kpiCardIncomeSub')}</p>
           <p className="stat-card__value text-income">{currencyFmt(totalIncome)}</p>
-        </article>
-        <article className="stat-card stat-card--expense">
+        </Link>
+        <Link
+          className="stat-card stat-card--expense stat-card--link"
+          to="/expense"
+        >
           <h2 className="stat-card__title">{t('summaryExpenses')}</h2>
           <p className="stat-card__hint">{t('kpiCardExpenseSub')}</p>
           <p className="stat-card__value text-expense">{currencyFmt(totalExpense)}</p>
-        </article>
-        <article className="stat-card stat-card--balance">
+        </Link>
+        <Link
+          className="stat-card stat-card--balance stat-card--link"
+          to="/balance"
+        >
           <h2 className="stat-card__title">{t('summaryBalance')}</h2>
           <p className="stat-card__hint">{t('kpiCardBalanceSub')}</p>
           <p
@@ -40,7 +62,7 @@ export default function DashboardPage() {
           >
             {currencyFmt(balance)}
           </p>
-        </article>
+        </Link>
       </div>
     </div>
   )

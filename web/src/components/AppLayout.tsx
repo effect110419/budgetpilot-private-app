@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import {
   LOCALE_OPTIONS,
   monthMessageKey,
@@ -7,7 +7,9 @@ import {
 } from '../i18n/locales'
 import { useI18n } from '../i18n/I18nProvider'
 import { useTheme } from '../theme/ThemeProvider'
+import { useAuth } from '../auth/AuthProvider'
 import { useBudgetData } from '../data/BudgetDataContext'
+import { getDisplayName } from '../lib/authDisplay'
 import SelectField from './SelectField'
 
 function MoonIcon() {
@@ -41,11 +43,13 @@ function SunIcon() {
 export default function AppLayout() {
   const { t, locale, setLocale } = useI18n()
   const { theme, toggleTheme } = useTheme()
+  const { user, loading: authLoading, cloudAvailable, signOut } = useAuth()
   const {
     yearOptions,
     selectedYear,
     selectedMonthPart,
     setSelectedMonth,
+    cloudSyncActive,
   } = useBudgetData()
 
   const monthOptions = useMemo(
@@ -70,17 +74,55 @@ export default function AppLayout() {
 
   return (
     <div className="app-shell">
-      <header className="hero">
-        <div className="hero-main">
-          <p className="hero-eyebrow">{t('appTitle')}</p>
-          <p className="hero-lead">{t('heroLead')}</p>
-        </div>
+      <div className="app-surface">
+        <header className="app-surface__header">
+          <div className="app-brand">
+            <p className="hero-eyebrow">{t('appTitle')}</p>
+            <p className="hero-lead">{t('heroLead')}</p>
+          </div>
+          <div className="app-header-actions" aria-live="polite">
+            {authLoading ? (
+              <span className="app-header-actions__muted">…</span>
+            ) : user ? (
+              <>
+                <span className="app-header-actions__display" title={user.email ?? ''}>
+                  {getDisplayName(user)}
+                </span>
+                <Link className="app-header-account-link" to="/account">
+                  {t('navAccount')}
+                </Link>
+                <span
+                  className={
+                    'app-header-actions__badge' +
+                    (cloudSyncActive ? ' app-header-actions__badge--on' : '')
+                  }
+                >
+                  {cloudSyncActive ? t('authCloudSync') : t('authLocalOnly')}
+                </span>
+                <button type="button" className="btn-header btn-header--ghost" onClick={() => signOut()}>
+                  {t('authSignOut')}
+                </button>
+              </>
+            ) : cloudAvailable ? (
+              <>
+                <Link className="btn-header btn-header--ghost" to="/login">
+                  {t('authSubmitSignIn')}
+                </Link>
+                <Link className="btn-header btn-header--primary" to="/login?mode=signup">
+                  {t('authSubmitSignUp')}
+                </Link>
+              </>
+            ) : (
+              <span className="app-header-actions__muted">{t('authLocalOnly')}</span>
+            )}
+          </div>
+        </header>
 
         <div className="toolbar" role="presentation">
           <div className="toolbar-block">
             <p className="toolbar-heading">{t('toolbarPeriod')}</p>
             <div className="toolbar-row">
-              <label className="field-stack">
+              <div className="field-stack" role="group">
                 <span className="field-stack-label">{t('monthLabel')}</span>
                 <SelectField
                   value={selectedMonthPart}
@@ -88,8 +130,8 @@ export default function AppLayout() {
                   options={monthOptions}
                   ariaLabel={t('monthLabel')}
                 />
-              </label>
-              <label className="field-stack">
+              </div>
+              <div className="field-stack" role="group">
                 <span className="field-stack-label">{t('yearLabel')}</span>
                 <SelectField
                   value={selectedYear}
@@ -97,14 +139,14 @@ export default function AppLayout() {
                   options={yearSelectOptions}
                   ariaLabel={t('yearLabel')}
                 />
-              </label>
+              </div>
             </div>
           </div>
 
           <div className="toolbar-block toolbar-block--end">
             <p className="toolbar-heading">{t('toolbarInterface')}</p>
             <div className="toolbar-row">
-              <label className="field-stack field-stack--toolbar">
+              <div className="field-stack field-stack--toolbar" role="group">
                 <span className="field-stack-label">{t('language')}</span>
                 <SelectField
                   value={locale}
@@ -112,7 +154,7 @@ export default function AppLayout() {
                   options={localeSelectOptions}
                   ariaLabel={t('language')}
                 />
-              </label>
+              </div>
               <div className="field-stack field-stack--toolbar field-stack--theme">
                 <span className="field-stack-label">{t('labelTheme')}</span>
                 <button
@@ -164,11 +206,11 @@ export default function AppLayout() {
             {t('navAnalytics')}
           </NavLink>
         </nav>
-      </header>
 
-      <main className="app-main">
-        <Outlet />
-      </main>
+        <main className="app-main app-main--surface">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }
