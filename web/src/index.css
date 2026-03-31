@@ -210,6 +210,12 @@ html[data-theme='dark'] body {
   color: var(--text-muted);
 }
 
+.app-header-actions__cloud-off {
+  max-width: 10.5rem;
+  line-height: 1.35;
+  text-align: right;
+}
+
 .app-header-actions__display {
   font-size: 13px;
   font-weight: 600;

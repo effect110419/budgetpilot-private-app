@@ -103,7 +103,7 @@ export default function AppLayout() {
                   {t('authSignOut')}
                 </button>
               </>
-            ) : cloudAvailable ? (
+            ) : (
               <>
                 <Link className="btn-header btn-header--ghost" to="/login">
                   {t('authSubmitSignIn')}
@@ -111,9 +111,12 @@ export default function AppLayout() {
                 <Link className="btn-header btn-header--primary" to="/login?mode=signup">
                   {t('authSubmitSignUp')}
                 </Link>
+                {!cloudAvailable && (
+                  <span className="app-header-actions__muted app-header-actions__cloud-off" title={t('authLocalOnly')}>
+                    {t('authLocalOnly')}
+                  </span>
+                )}
               </>
-            ) : (
-              <span className="app-header-actions__muted">{t('authLocalOnly')}</span>
             )}
           </div>
         </header>
