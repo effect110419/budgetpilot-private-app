@@ -87,7 +87,13 @@ export default function AccountPage() {
       ])
       setProfile(p)
       setRecurring(r)
-      if (user) setName(getDisplayNameForEdit(user))
+
+      const sb = getSupabase()
+      const { data: authData } = sb ? await sb.auth.getUser() : { data: { user: null } }
+      const freshUser = authData.user ?? user
+      const nameFromDb = p?.display_name?.trim()
+      setName(nameFromDb || getDisplayNameForEdit(freshUser))
+
       if (p?.age != null) setAge(String(p.age))
       else setAge('')
     } catch {
@@ -159,6 +165,7 @@ export default function AccountPage() {
       return
     }
     setProfileSaved(true)
+    setName(trimmed)
     void load()
   }
 
