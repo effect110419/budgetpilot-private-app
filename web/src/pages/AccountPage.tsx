@@ -6,6 +6,7 @@ import {
   fetchProfile,
   fetchRecurringIncomes,
   insertRecurringIncome,
+  updateRecurringIncome,
   upsertProfileBasics,
   type ProfileRow,
   type RecurringIncomeRow,
@@ -70,6 +71,11 @@ export default function AccountPage() {
   const [recCategory, setRecCategory] = useState<string>(INCOME_CATEGORIES[0])
   const [recNote, setRecNote] = useState('')
   const [recPending, setRecPending] = useState(false)
+  const [editingRecId, setEditingRecId] = useState<string | null>(null)
+  const [editRecAmount, setEditRecAmount] = useState('')
+  const [editRecDay, setEditRecDay] = useState('1')
+  const [editRecCategory, setEditRecCategory] = useState<string>(INCOME_CATEGORIES[0])
+  const [editRecNote, setEditRecNote] = useState('')
 
   const load = useCallback(async () => {
     if (!user) return
@@ -184,11 +190,50 @@ export default function AccountPage() {
 
   const onDeleteRecurring = async (id: string) => {
     setRecErr(null)
+    if (editingRecId === id) setEditingRecId(null)
     const { error: err } = await deleteRecurringIncome(id)
     if (err) {
       setRecErr(t('accountSaveErrorRecurring'))
       return
     }
+    notifyRecurringChanged()
+    void load()
+  }
+
+  const startEditRecurring = (r: RecurringIncomeRow) => {
+    setRecErr(null)
+    setEditingRecId(r.id)
+    setEditRecAmount(String(r.amount))
+    setEditRecDay(String(r.day_of_month))
+    setEditRecCategory(r.category)
+    setEditRecNote(r.note)
+  }
+
+  const cancelEditRecurring = () => {
+    setEditingRecId(null)
+  }
+
+  const onSaveEditRecurring = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!editingRecId) return
+    setRecErr(null)
+    const amount = clampMoneyAmount(parseMoneyInput(editRecAmount))
+    const day = Number(editRecDay)
+    if (amount <= 0) return
+    if (!Number.isInteger(day) || day < 1 || day > 31) return
+    setRecPending(true)
+    const { error: err } = await updateRecurringIncome(editingRecId, {
+      amount,
+      category: editRecCategory,
+      day_of_month: day,
+      note: sanitizeNote(editRecNote),
+    })
+    setRecPending(false)
+    if (err) {
+      setRecErr(t('accountSaveErrorRecurring'))
+      return
+    }
+    setEditingRecId(null)
     notifyRecurringChanged()
     void load()
   }
@@ -456,18 +501,91 @@ export default function AccountPage() {
               <ul className="recurring-list">
                 {recurring.map((r) => (
                   <li key={r.id} className="recurring-list__item panel">
-                    <div>
-                      <strong>{currencyFmt(r.amount)}</strong> · {categoryLabel(r.category, t)} · {t('recurringDay')}:{' '}
-                      {r.day_of_month}
-                      {r.note ? ` · ${r.note}` : ''}
-                    </div>
-                    <button
-                      type="button"
-                      className="recurring-list__del"
-                      onClick={() => onDeleteRecurring(r.id)}
-                    >
-                      {t('recurringDelete')}
-                    </button>
+                    {editingRecId === r.id ? (
+                      <form className="recurring-list__edit-form" onSubmit={onSaveEditRecurring}>
+                        <div className="form-grid form-grid--2 recurring-form__grid">
+                          <label className="form-field">
+                            <span className="form-field-label">{t('recurringAmount')}</span>
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              value={editRecAmount}
+                              onChange={(e) => setEditRecAmount(e.target.value)}
+                              placeholder="0,00"
+                              required
+                            />
+                          </label>
+                          <label className="form-field">
+                            <span className="form-field-label">{t('recurringDay')}</span>
+                            <input
+                              type="number"
+                              min={1}
+                              max={31}
+                              value={editRecDay}
+                              onChange={(e) => setEditRecDay(e.target.value)}
+                              required
+                            />
+                          </label>
+                          <div className="form-field">
+                            <span className="form-field-label">{t('recurringCategory')}</span>
+                            <SelectField
+                              value={editRecCategory}
+                              onChange={setEditRecCategory}
+                              options={categoryOptions}
+                              ariaLabel={t('recurringCategory')}
+                            />
+                          </div>
+                          <label className="form-field">
+                            <span className="form-field-label">{t('recurringNote')}</span>
+                            <input
+                              type="text"
+                              value={editRecNote}
+                              maxLength={NOTE_MAX_LENGTH}
+                              onChange={(e) => setEditRecNote(e.target.value)}
+                            />
+                          </label>
+                        </div>
+                        <div className="recurring-list__edit-actions">
+                          <button type="submit" className="btn-primary" disabled={recPending}>
+                            {t('recurringSaveEdit')}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-cancel"
+                            onClick={cancelEditRecurring}
+                            disabled={recPending}
+                          >
+                            {t('recurringCancelEdit')}
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <div className="recurring-list__summary">
+                          <p className="recurring-list__text">
+                            <strong>{currencyFmt(r.amount)}</strong> · {categoryLabel(r.category, t)} ·{' '}
+                            {t('recurringDay')}: {r.day_of_month}
+                            {r.note ? ` · ${r.note}` : ''}
+                          </p>
+                          <div className="recurring-list__actions">
+                            <button
+                              type="button"
+                              className="recurring-list__edit"
+                              onClick={() => startEditRecurring(r)}
+                            >
+                              {t('recurringEdit')}
+                            </button>
+                            <button
+                              type="button"
+                              className="recurring-list__del"
+                              onClick={() => onDeleteRecurring(r.id)}
+                            >
+                              {t('recurringDelete')}
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>

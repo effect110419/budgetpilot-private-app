@@ -121,6 +121,31 @@ export async function insertRecurringIncome(row: {
   return { error: error ? new Error(error.message) : null }
 }
 
+export async function updateRecurringIncome(
+  id: string,
+  row: {
+    amount: number
+    category: string
+    day_of_month: number
+    note: string
+    enabled?: boolean
+  },
+): Promise<{ error: Error | null }> {
+  const sb = getSupabase()
+  if (!sb) return { error: new Error('no_supabase') }
+  const { error } = await sb
+    .from('recurring_incomes')
+    .update({
+      amount: row.amount,
+      category: row.category,
+      day_of_month: row.day_of_month,
+      note: row.note,
+      ...(row.enabled !== undefined ? { enabled: row.enabled } : {}),
+    })
+    .eq('id', id)
+  return { error: error ? new Error(error.message) : null }
+}
+
 export async function deleteRecurringIncome(id: string): Promise<{ error: Error | null }> {
   const sb = getSupabase()
   if (!sb) return { error: new Error('no_supabase') }

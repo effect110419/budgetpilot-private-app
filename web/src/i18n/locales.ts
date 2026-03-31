@@ -32,6 +32,17 @@ export type MessageKey =
   | 'sectionSummaryDesc'
   | 'dashboardOverBudgetBanner'
   | 'dashboardOverBudgetLink'
+  | 'chartSideKpiTitle'
+  | 'chartBalanceInRingHint'
+  | 'chartPanelEyebrow'
+  | 'chartAriaLabel'
+  | 'chartNoData'
+  | 'chartDeficitHint'
+  | 'chartBudgetByCategory'
+  | 'chartBudgetSelectLabel'
+  | 'chartBudgetSpentVsLimit'
+  | 'chartTopExpenses'
+  | 'chartTopIncome'
   | 'kpiCardIncomeSub'
   | 'kpiCardExpenseSub'
   | 'kpiCardBalanceSub'
@@ -210,6 +221,9 @@ export type MessageKey =
   | 'recurringAdd'
   | 'recurringDelete'
   | 'recurringEmpty'
+  | 'recurringEdit'
+  | 'recurringSaveEdit'
+  | 'recurringCancelEdit'
   | MonthKey
 
 const en: Record<MessageKey, string> = {
@@ -220,12 +234,23 @@ const en: Record<MessageKey, string> = {
   toolbarPeriod: 'Reporting period',
   toolbarInterface: 'Interface',
   labelTheme: 'Theme',
-  sectionSummaryTitle: 'Your month in numbers',
+  sectionSummaryTitle: 'Your money this month',
   sectionSummaryDesc:
-    'These three figures are yours for the month and year selected above — only operations whose date falls in that month.',
+    'Balance in the chart; income and spending beside it; category limits and top categories below — for the month you selected above.',
   dashboardOverBudgetBanner:
     'Some expense categories are over their monthly limits — check budgets to adjust or spending.',
   dashboardOverBudgetLink: 'Open budgets',
+  chartSideKpiTitle: 'Income & expenses',
+  chartBalanceInRingHint: 'Balance for the month is in the chart.',
+  chartPanelEyebrow: 'Month at a glance',
+  chartAriaLabel: 'Monthly income, spending, and balance — donut chart',
+  chartNoData: 'No income or spending this month yet',
+  chartDeficitHint: 'Spending exceeds income this month',
+  chartBudgetByCategory: 'Limit by category (from Budgets)',
+  chartBudgetSelectLabel: 'Category',
+  chartBudgetSpentVsLimit: 'Spent / limit (this month)',
+  chartTopExpenses: 'Top expense categories',
+  chartTopIncome: 'Top income categories',
   kpiCardIncomeSub: 'Everything that came into your accounts this month',
   kpiCardExpenseSub: 'Everything you spent this month',
   kpiCardBalanceSub: 'What remains in your pocket after expenses',
@@ -258,7 +283,7 @@ const en: Record<MessageKey, string> = {
   operationsSortAmountDesc: 'Amount — largest first',
   operationsSortAmountAsc: 'Amount — smallest first',
   operationsNoMatches: 'No entries match your filters.',
-  navDashboard: 'Overview',
+  navDashboard: 'Chart',
   navOperations: 'Operations',
   navBudgets: 'Budgets',
   navAnalytics: 'Analytics',
@@ -422,6 +447,9 @@ const en: Record<MessageKey, string> = {
   recurringAdd: 'Add recurring income',
   recurringDelete: 'Remove',
   recurringEmpty: 'No recurring income yet.',
+  recurringEdit: 'Edit',
+  recurringSaveEdit: 'Save',
+  recurringCancelEdit: 'Cancel',
   month_1: 'January',
   month_2: 'February',
   month_3: 'March',
@@ -444,12 +472,23 @@ const ru: Record<MessageKey, string> = {
   toolbarPeriod: 'Период отчёта',
   toolbarInterface: 'Интерфейс',
   labelTheme: 'Тема',
-  sectionSummaryTitle: 'Ваш месяц в цифрах',
+  sectionSummaryTitle: 'Ваши деньги за месяц',
   sectionSummaryDesc:
-    'Эти три показателя — про ваши операции за месяц и год, которые выбраны выше: учитываются только даты из этого периода.',
+    'Баланс в центре диаграммы; доход и расход — справа; лимиты по категориям и крупнейшие статьи — ниже, за выбранный месяц.',
   dashboardOverBudgetBanner:
     'По некоторым категориям расходов превышен месячный лимит — загляните в бюджеты.',
   dashboardOverBudgetLink: 'Открыть бюджеты',
+  chartSideKpiTitle: 'Доход и расходы',
+  chartBalanceInRingHint: 'Баланс за месяц — в центре диаграммы.',
+  chartPanelEyebrow: 'Сводка за месяц',
+  chartAriaLabel: 'Доход, расход и баланс за месяц — круговая диаграмма',
+  chartNoData: 'За этот месяц пока нет доходов и расходов',
+  chartDeficitHint: 'Расходы за месяц выше дохода',
+  chartBudgetByCategory: 'Лимит по категории (из вкладки «Бюджеты»)',
+  chartBudgetSelectLabel: 'Категория',
+  chartBudgetSpentVsLimit: 'Потрачено / лимит (за месяц)',
+  chartTopExpenses: 'Крупнейшие расходы по категориям',
+  chartTopIncome: 'Крупнейшие доходы по категориям',
   kpiCardIncomeSub: 'Всё, что поступило к вам за этот месяц',
   kpiCardExpenseSub: 'Всё, что вы потратили за этот месяц',
   kpiCardBalanceSub: 'Что остаётся у вас после расходов',
@@ -482,7 +521,7 @@ const ru: Record<MessageKey, string> = {
   operationsSortAmountDesc: 'Сумма — по убыванию',
   operationsSortAmountAsc: 'Сумма — по возрастанию',
   operationsNoMatches: 'Нет операций по заданным условиям.',
-  navDashboard: 'Сводка',
+  navDashboard: 'График',
   navOperations: 'Операции',
   navBudgets: 'Бюджеты',
   navAnalytics: 'Аналитика',
@@ -647,6 +686,9 @@ const ru: Record<MessageKey, string> = {
   recurringAdd: 'Добавить постоянный доход',
   recurringDelete: 'Удалить',
   recurringEmpty: 'Пока нет постоянных доходов.',
+  recurringEdit: 'Изменить',
+  recurringSaveEdit: 'Сохранить',
+  recurringCancelEdit: 'Отмена',
   month_1: 'Январь',
   month_2: 'Февраль',
   month_3: 'Март',

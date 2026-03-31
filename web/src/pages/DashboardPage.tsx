@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import FinanceDonutChart from '../components/FinanceDonutChart'
 import { useBudgetData } from '../data/BudgetDataContext'
 
 export default function DashboardPage() {
@@ -11,6 +12,9 @@ export default function DashboardPage() {
     balance,
     currencyFmt,
     overBudgetCategories,
+    budgets,
+    expensesByCategory,
+    incomesByCategory,
   } = useBudgetData()
 
   const overBudget = overBudgetCategories.length > 0
@@ -33,6 +37,20 @@ export default function DashboardPage() {
           </Link>
         </div>
       )}
+
+      <div className="dashboard-chart-panel">
+        <FinanceDonutChart
+          t={t}
+          currencyFmt={currencyFmt}
+          periodLabel={`${monthName} ${selectedYear}`}
+          totalIncome={totalIncome}
+          totalExpense={totalExpense}
+          balance={balance}
+          budgets={budgets}
+          expensesByCategory={expensesByCategory}
+          incomesByCategory={incomesByCategory}
+        />
+      </div>
 
       <div className="stat-cards">
         <Link
