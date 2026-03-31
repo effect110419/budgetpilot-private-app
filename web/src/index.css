@@ -1612,6 +1612,11 @@ button[type='submit']:active {
   font-size: 15px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  max-width: min(11rem, 38vw);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
 }
 
 .row-actions {

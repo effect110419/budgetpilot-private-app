@@ -53,8 +53,6 @@ export type MessageKey =
   | 'operationsFilterTypeExpense'
   | 'operationsFilterCategory'
   | 'operationsFilterCategoryAll'
-  | 'operationsSearchLabel'
-  | 'operationsSearchPlaceholder'
   | 'operationsSortLabel'
   | 'operationsSortDateDesc'
   | 'operationsSortDateAsc'
@@ -166,6 +164,8 @@ export type MessageKey =
   | 'authPwdErrDigit'
   | 'accountSaveErrorAuth'
   | 'accountSaveErrorProfile'
+  | 'accountLoadError'
+  | 'accountSaveErrorRecurring'
   | 'subscriptionHeading'
   | 'subscriptionCurrentLabel'
   | 'subscriptionPlanFree'
@@ -232,7 +232,7 @@ const en: Record<MessageKey, string> = {
   sectionEntryTitle: 'Add to your ledger',
   sectionEntryDesc:
     'One row — one movement of your money. Save it below: your summary and lists update on their own.',
-  hintAmount: 'In rubles, whole numbers.',
+  hintAmount: 'In rubles; use a comma or dot for kopecks (e.g. 99,50).',
   hintDate: 'Use the day the payment actually happened.',
   hintCategory:
     'Income and expenses use separate categories. Your expense categories feed budgets and charts.',
@@ -252,8 +252,6 @@ const en: Record<MessageKey, string> = {
   operationsFilterTypeExpense: 'Expenses only',
   operationsFilterCategory: 'Category',
   operationsFilterCategoryAll: 'All categories',
-  operationsSearchLabel: 'Search',
-  operationsSearchPlaceholder: 'Search note, category, amount…',
   operationsSortLabel: 'Sort',
   operationsSortDateDesc: 'Date — newest first',
   operationsSortDateAsc: 'Date — oldest first',
@@ -371,6 +369,10 @@ const en: Record<MessageKey, string> = {
   authPwdErrDigit: 'Add at least one digit (0–9).',
   accountSaveErrorAuth: 'Could not update your session. Try signing in again.',
   accountSaveErrorProfile: 'Could not save your profile in the database. Check that migrations are applied.',
+  accountLoadError:
+    'Could not load account data from the database. Check migrations, RLS, and your connection.',
+  accountSaveErrorRecurring:
+    'Could not save recurring income. Ensure the recurring_incomes table exists and migrations (including RLS) are applied in Supabase.',
   subscriptionHeading: 'Subscription',
   subscriptionCurrentLabel: 'Your current plan',
   subscriptionPlanFree: 'Free',
@@ -454,7 +456,7 @@ const ru: Record<MessageKey, string> = {
   sectionEntryTitle: 'Добавить в вашу книгу',
   sectionEntryDesc:
     'Одна строка — одно ваше движение денег. Сохраните ниже: сводка и списки обновятся сами.',
-  hintAmount: 'Сумма в рублях, без копеек.',
+  hintAmount: 'Сумма в рублях; копейки — через запятую или точку (например 99,50).',
   hintDate: 'День, когда платёж реально прошёл.',
   hintCategory:
     'У доходов и расходов — разные категории. По расходам считаются ваши лимиты и диаграммы.',
@@ -474,8 +476,6 @@ const ru: Record<MessageKey, string> = {
   operationsFilterTypeExpense: 'Только расходы',
   operationsFilterCategory: 'Категория',
   operationsFilterCategoryAll: 'Все категории',
-  operationsSearchLabel: 'Поиск',
-  operationsSearchPlaceholder: 'Поиск по заметке, категории, сумме…',
   operationsSortLabel: 'Сортировка',
   operationsSortDateDesc: 'Дата — сначала новые',
   operationsSortDateAsc: 'Дата — сначала старые',
@@ -594,6 +594,10 @@ const ru: Record<MessageKey, string> = {
   accountSaveErrorAuth: 'Не удалось обновить сессию. Выйдите и войдите снова.',
   accountSaveErrorProfile:
     'Не удалось сохранить профиль в базе. Проверьте, что SQL-миграции применены в Supabase.',
+  accountLoadError:
+    'Не удалось загрузить данные аккаунта. Проверьте миграции, политики RLS и подключение.',
+  accountSaveErrorRecurring:
+    'Не удалось сохранить постоянный доход. Убедитесь, что в Supabase создана таблица recurring_incomes и применены миграции (включая RLS).',
   subscriptionHeading: 'Подписка',
   subscriptionCurrentLabel: 'Текущий тариф',
   subscriptionPlanFree: 'Бесплатный',

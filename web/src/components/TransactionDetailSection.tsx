@@ -3,6 +3,11 @@ import { categoryLabel } from '../i18n/locales'
 import { useBudgetData } from '../data/BudgetDataContext'
 import type { Transaction, TransactionType } from '../data/budgetTypes'
 import { coerceCategoryForType, defaultCategoryForType } from '../data/budgetTypes'
+import {
+  clampMoneyAmount,
+  NOTE_MAX_LENGTH,
+  parseMoneyInput,
+} from '../lib/validation'
 import SelectField from './SelectField'
 
 export type DetailMode = 'income' | 'expense' | 'balance'
@@ -140,8 +145,8 @@ export default function TransactionDetailSection({ mode }: { mode: DetailMode })
 
   const handleAddSubmit = (event: FormEvent) => {
     event.preventDefault()
-    const amount = Number(addForm.amount)
-    if (!Number.isFinite(amount) || amount <= 0) return
+    const amount = clampMoneyAmount(parseMoneyInput(addForm.amount))
+    if (amount <= 0) return
     const type: TransactionType =
       mode === 'balance'
         ? addForm.type
@@ -161,8 +166,8 @@ export default function TransactionDetailSection({ mode }: { mode: DetailMode })
   const handleEditSubmit = (event: FormEvent) => {
     event.preventDefault()
     if (!editingId) return
-    const amount = Number(editDraft.amount)
-    if (!Number.isFinite(amount) || amount <= 0) return
+    const amount = clampMoneyAmount(parseMoneyInput(editDraft.amount))
+    if (amount <= 0) return
     const type: TransactionType =
       mode === 'balance'
         ? editDraft.type
@@ -335,14 +340,13 @@ export default function TransactionDetailSection({ mode }: { mode: DetailMode })
             <label className="form-field">
               <span className="form-field-label">{t('amount')}</span>
               <input
-                type="number"
-                min="1"
-                step="1"
+                type="text"
+                inputMode="decimal"
                 value={addForm.amount}
                 onChange={(e) =>
                   setAddForm((prev) => ({ ...prev, amount: e.target.value }))
                 }
-                placeholder="5000"
+                placeholder="5000,50"
                 required
                 autoComplete="off"
               />
@@ -379,6 +383,7 @@ export default function TransactionDetailSection({ mode }: { mode: DetailMode })
               <input
                 type="text"
                 value={addForm.note}
+                maxLength={NOTE_MAX_LENGTH}
                 onChange={(e) =>
                   setAddForm((prev) => ({ ...prev, note: e.target.value }))
                 }
@@ -427,9 +432,8 @@ export default function TransactionDetailSection({ mode }: { mode: DetailMode })
                       <label className="form-field">
                         <span className="form-field-label">{t('amount')}</span>
                         <input
-                          type="number"
-                          min="1"
-                          step="1"
+                          type="text"
+                          inputMode="decimal"
                           value={editDraft.amount}
                           onChange={(e) =>
                             setEditDraft((prev) => ({
@@ -474,6 +478,7 @@ export default function TransactionDetailSection({ mode }: { mode: DetailMode })
                         <input
                           type="text"
                           value={editDraft.note}
+                          maxLength={NOTE_MAX_LENGTH}
                           onChange={(e) =>
                             setEditDraft((prev) => ({
                               ...prev,

@@ -3,6 +3,7 @@ import { categoryLabel } from '../i18n/locales'
 import { useBudgetData } from '../data/BudgetDataContext'
 import type { Transaction, TransactionType } from '../data/budgetTypes'
 import { defaultCategoryForType } from '../data/budgetTypes'
+import { NOTE_MAX_LENGTH } from '../lib/validation'
 import SelectField from '../components/SelectField'
 
 type TypeFilter = 'all' | TransactionType
@@ -24,7 +25,6 @@ export default function OperationsPage() {
 
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
-  const [searchQuery, setSearchQuery] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('date_desc')
 
   const setTypeFilterAndResetCategory = (v: TypeFilter) => {
@@ -85,15 +85,6 @@ export default function OperationsPage() {
     if (categoryFilter !== 'all') {
       list = list.filter((item) => item.category === categoryFilter)
     }
-    const q = searchQuery.trim().toLowerCase()
-    if (q) {
-      list = list.filter((item) => {
-        const cat = categoryLabel(item.category, t).toLowerCase()
-        const note = (item.note || '').toLowerCase()
-        const amountStr = String(Math.round(item.amount))
-        return cat.includes(q) || note.includes(q) || amountStr.includes(q)
-      })
-    }
     const sorted = [...list].sort((a, b) => {
       if (sortKey === 'date_desc' || sortKey === 'date_asc') {
         const cmp = a.date.localeCompare(b.date)
@@ -106,14 +97,7 @@ export default function OperationsPage() {
       return b.id.localeCompare(a.id)
     })
     return sorted
-  }, [
-    monthTransactions,
-    typeFilter,
-    categoryFilter,
-    searchQuery,
-    sortKey,
-    t,
-  ])
+  }, [monthTransactions, typeFilter, categoryFilter, sortKey])
 
   return (
     <div className="page page--stack">
@@ -146,14 +130,13 @@ export default function OperationsPage() {
             <label className="form-field">
               <span className="form-field-label">{t('amount')}</span>
               <input
-                type="number"
-                min="1"
-                step="1"
+                type="text"
+                inputMode="decimal"
                 value={form.amount}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, amount: e.target.value }))
                 }
-                placeholder="5000"
+                placeholder="5000,50"
                 required
                 autoComplete="off"
               />
@@ -191,6 +174,7 @@ export default function OperationsPage() {
               <input
                 type="text"
                 value={form.note}
+                maxLength={NOTE_MAX_LENGTH}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, note: e.target.value }))
                 }
@@ -233,18 +217,6 @@ export default function OperationsPage() {
                 options={categoryFilterOptions}
                 ariaLabel={t('operationsFilterCategory')}
                 disabled={typeFilter === 'all'}
-              />
-            </label>
-          </div>
-          <div className="operations-toolbar__row">
-            <label className="form-field operations-toolbar__field operations-toolbar__field--grow">
-              <span className="form-field-label">{t('operationsSearchLabel')}</span>
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('operationsSearchPlaceholder')}
-                autoComplete="off"
               />
             </label>
             <label className="form-field operations-toolbar__field">

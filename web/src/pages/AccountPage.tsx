@@ -12,9 +12,11 @@ import {
 } from '../lib/accountsApi'
 import { getDisplayNameForEdit, validateUsername } from '../lib/authDisplay'
 import { getSupabase } from '../lib/supabase'
+import { useBudgetData } from '../data/BudgetDataContext'
 import { INCOME_CATEGORIES } from '../data/budgetTypes'
 import SelectField from '../components/SelectField'
 import { useI18n } from '../i18n/I18nProvider'
+import { clampMoneyAmount, NOTE_MAX_LENGTH, parseMoneyInput, sanitizeNote } from '../lib/validation'
 import { categoryLabel, type MessageKey } from '../i18n/locales'
 
 const FREE_BULLET_KEYS: MessageKey[] = [
@@ -46,7 +48,8 @@ function notifyRecurringChanged() {
 
 export default function AccountPage() {
   const { t } = useI18n()
-  const { user, cloudAvailable } = useAuth()
+  const { currencyFmt } = useBudgetData()
+  const { user, cloudAvailable, refreshAuth } = useAuth()
   const [profile, setProfile] = useState<ProfileRow | null>(null)
   const [name, setName] = useState('')
   const [age, setAge] = useState('')
@@ -82,7 +85,7 @@ export default function AccountPage() {
       if (p?.age != null) setAge(String(p.age))
       else setAge('')
     } catch {
-      setLoadError(t('accountSaveErrorProfile'))
+      setLoadError(t('accountLoadError'))
     } finally {
       setAccountDataReady(true)
     }
@@ -142,6 +145,7 @@ export default function AccountPage() {
       setPending(false)
       return
     }
+    await refreshAuth()
     const { error: pErr } = await upsertProfileBasics(user.id, user.email ?? null, trimmed, n)
     setPending(false)
     if (pErr) {
@@ -155,9 +159,9 @@ export default function AccountPage() {
   const onAddRecurring = async (e: FormEvent) => {
     e.preventDefault()
     setRecErr(null)
-    const amount = Number(recAmount.replace(',', '.'))
+    const amount = clampMoneyAmount(parseMoneyInput(recAmount))
     const day = Number(recDay)
-    if (!Number.isFinite(amount) || amount <= 0) return
+    if (amount <= 0) return
     if (!Number.isInteger(day) || day < 1 || day > 31) return
     setRecPending(true)
     const { error: err } = await insertRecurringIncome({
@@ -165,11 +169,11 @@ export default function AccountPage() {
       amount,
       category: recCategory,
       day_of_month: day,
-      note: recNote.trim(),
+      note: sanitizeNote(recNote),
     })
     setRecPending(false)
     if (err) {
-      setRecErr(t('accountSaveErrorProfile'))
+      setRecErr(t('accountSaveErrorRecurring'))
       return
     }
     setRecAmount('')
@@ -182,7 +186,7 @@ export default function AccountPage() {
     setRecErr(null)
     const { error: err } = await deleteRecurringIncome(id)
     if (err) {
-      setRecErr(t('accountSaveErrorProfile'))
+      setRecErr(t('accountSaveErrorRecurring'))
       return
     }
     notifyRecurringChanged()
@@ -400,6 +404,7 @@ export default function AccountPage() {
                     inputMode="decimal"
                     value={recAmount}
                     onChange={(e) => setRecAmount(e.target.value)}
+                    placeholder="0,00"
                     required
                   />
                 </label>
@@ -428,6 +433,7 @@ export default function AccountPage() {
                   <input
                     type="text"
                     value={recNote}
+                    maxLength={NOTE_MAX_LENGTH}
                     onChange={(e) => setRecNote(e.target.value)}
                   />
                 </label>
@@ -451,7 +457,7 @@ export default function AccountPage() {
                 {recurring.map((r) => (
                   <li key={r.id} className="recurring-list__item panel">
                     <div>
-                      <strong>{r.amount} ₽</strong> · {categoryLabel(r.category, t)} · {t('recurringDay')}:{' '}
+                      <strong>{currencyFmt(r.amount)}</strong> · {categoryLabel(r.category, t)} · {t('recurringDay')}:{' '}
                       {r.day_of_month}
                       {r.note ? ` · ${r.note}` : ''}
                     </div>

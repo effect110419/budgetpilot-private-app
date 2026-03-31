@@ -14,6 +14,7 @@ import { isSupabaseConfigured } from '../lib/supabase'
 import { fetchRecurringIncomes } from '../lib/accountsApi'
 import { injectRecurringTransactions } from '../lib/recurringIncome'
 import { fetchCloudData, replaceCloudData } from '../lib/supabaseBudgetApi'
+import { clampMoneyAmount, parseMoneyInput, sanitizeNote } from '../lib/validation'
 import {
   coerceCategoryForType,
   EXPENSE_CATEGORIES,
@@ -35,7 +36,18 @@ function normalizeTransactions(list: Transaction[]): Transaction[] {
   return list.map((tr) => ({
     ...tr,
     category: coerceCategoryForType(tr.type, tr.category),
+    amount: clampMoneyAmount(tr.amount),
   }))
+}
+
+function normalizeBudgetMap(raw: BudgetMap): BudgetMap {
+  const out: BudgetMap = {}
+  for (const key of Object.keys(raw)) {
+    const v = raw[key]
+    const c = clampMoneyAmount(typeof v === 'number' ? v : Number(v))
+    if (c > 0) out[key] = c
+  }
+  return out
 }
 
 function getStoredSnapshot(): { transactions: Transaction[]; budgets: BudgetMap } {
@@ -66,7 +78,8 @@ function currency(value: number, locale: 'en' | 'ru'): string {
   return new Intl.NumberFormat(locale === 'ru' ? 'ru-RU' : 'en-US', {
     style: 'currency',
     currency: 'RUB',
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(value)
 }
 
@@ -95,7 +108,9 @@ function useBudgetDataInner() {
   const [transactions, setTransactions] = useState<Transaction[]>(() =>
     normalizeTransactions(getStoredSnapshot().transactions),
   )
-  const [budgets, setBudgets] = useState<BudgetMap>(() => getStoredSnapshot().budgets)
+  const [budgets, setBudgets] = useState<BudgetMap>(() =>
+    normalizeBudgetMap(getStoredSnapshot().budgets),
+  )
   const [dataSource, setDataSource] = useState<DataSource>('local')
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonth)
@@ -126,7 +141,7 @@ function useBudgetDataInner() {
     if (auth.user) return
     invalidateLocalCache()
     setTransactions(normalizeTransactions(getStoredSnapshot().transactions))
-    setBudgets(getStoredSnapshot().budgets)
+    setBudgets(normalizeBudgetMap(getStoredSnapshot().budgets))
     setDataSource('local')
     // eslint-disable-next-line react-hooks/exhaustive-deps -- auth.user часто новая ссылка при refresh токена
   }, [auth.loading, auth.user?.id])
@@ -152,7 +167,7 @@ function useBudgetDataInner() {
         }
         if (cancelled) return
         setTransactions(normalizeTransactions(remoteTx))
-        setBudgets(remoteBud)
+        setBudgets(normalizeBudgetMap(remoteBud))
         setDataSource('cloud')
       } catch (e) {
         console.error('Cloud load failed', e)
@@ -276,8 +291,11 @@ function useBudgetDataInner() {
 
   const createTransaction = useCallback((payload: Omit<Transaction, 'id'>) => {
     const category = coerceCategoryForType(payload.type, payload.category.trim())
+    const amount = clampMoneyAmount(payload.amount)
+    if (amount <= 0) return
+    const note = sanitizeNote(payload.note)
     setTransactions((prev) => [
-      { ...payload, id: crypto.randomUUID(), category },
+      { ...payload, id: crypto.randomUUID(), category, amount, note },
       ...prev,
     ])
   }, [])
@@ -289,6 +307,8 @@ function useBudgetDataInner() {
           if (tr.id !== id) return tr
           const merged = { ...tr, ...patch }
           merged.category = coerceCategoryForType(merged.type, merged.category.trim())
+          if (patch.amount !== undefined) merged.amount = clampMoneyAmount(merged.amount)
+          if (patch.note !== undefined) merged.note = sanitizeNote(merged.note)
           return merged
         }),
       )
@@ -298,8 +318,8 @@ function useBudgetDataInner() {
 
   const handleAddTransaction = useCallback((event: FormEvent) => {
     event.preventDefault()
-    const amount = Number(form.amount)
-    if (!Number.isFinite(amount) || amount <= 0) return
+    const amount = clampMoneyAmount(parseMoneyInput(form.amount))
+    if (amount <= 0) return
 
     const newTransaction: Transaction = {
       id: crypto.randomUUID(),
@@ -307,7 +327,7 @@ function useBudgetDataInner() {
       amount,
       category: coerceCategoryForType(form.type, form.category.trim()),
       date: form.date,
-      note: form.note.trim(),
+      note: sanitizeNote(form.note),
     }
 
     setTransactions((prev) => [newTransaction, ...prev])
@@ -319,9 +339,9 @@ function useBudgetDataInner() {
   }, [])
 
   const handleBudgetChange = useCallback((category: string, value: string) => {
-    const amount = Number(value)
+    const amount = clampMoneyAmount(parseMoneyInput(value))
     setBudgets((prev) => {
-      if (!Number.isFinite(amount) || amount <= 0) {
+      if (amount <= 0) {
         const next = { ...prev }
         delete next[category]
         return next

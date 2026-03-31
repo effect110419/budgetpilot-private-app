@@ -43,12 +43,11 @@ export default function BudgetsPage() {
               <label className="budget-card-field">
                 <span className="budget-field-label">{t('setLimit')}</span>
                 <input
-                  type="number"
-                  min="0"
-                  step="100"
-                  value={limit || ''}
+                  type="text"
+                  inputMode="decimal"
+                  value={limit > 0 ? String(limit) : ''}
                   onChange={(e) => handleBudgetChange(category, e.target.value)}
-                  placeholder={t('setLimit')}
+                  placeholder="0,00"
                   aria-label={`${categoryLabel(category, t)} — ${t('setLimit')}`}
                 />
               </label>

@@ -27,6 +27,8 @@ type AuthContextValue = {
   session: Session | null
   loading: boolean
   cloudAvailable: boolean
+  /** Подтянуть сессию из клиента (после updateUser и т.п.), чтобы UI сразу видел новые user_metadata. */
+  refreshAuth: () => Promise<void>
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signUp: (
     email: string,
@@ -92,17 +94,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null)
   }, [])
 
+  const refreshAuth = useCallback(async () => {
+    const sb = getSupabase()
+    if (!sb) return
+    const { data: refData, error: refErr } = await sb.auth.refreshSession()
+    if (!refErr && refData.session) {
+      setSession(refData.session)
+      return
+    }
+    const {
+      data: { session: next },
+      error,
+    } = await sb.auth.getSession()
+    if (!error) setSession(next)
+  }, [])
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user: session?.user ?? null,
       session,
       loading,
       cloudAvailable: isSupabaseConfigured,
+      refreshAuth,
       signIn,
       signUp,
       signOut,
     }),
-    [session, loading, signIn, signUp, signOut],
+    [session, loading, refreshAuth, signIn, signUp, signOut],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
