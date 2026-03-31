@@ -38,10 +38,7 @@ export type MessageKey =
   | 'chartAriaLabel'
   | 'chartNoData'
   | 'chartDeficitHint'
-  | 'chartBudgetByCategory'
-  | 'chartBudgetSelectLabel'
-  | 'chartBudgetSpentVsLimit'
-  | 'chartTopExpenses'
+  | 'chartExpenseAnalyticsLink'
   | 'chartTopIncome'
   | 'kpiCardIncomeSub'
   | 'kpiCardExpenseSub'
@@ -236,7 +233,7 @@ const en: Record<MessageKey, string> = {
   labelTheme: 'Theme',
   sectionSummaryTitle: 'Your money this month',
   sectionSummaryDesc:
-    'Balance in the chart; income and spending beside it; category limits and top categories below — for the month you selected above.',
+    'Balance in the chart; income and spending beside it; expenses by category and top lines below — for the month you selected above.',
   dashboardOverBudgetBanner:
     'Some expense categories are over their monthly limits — check budgets to adjust or spending.',
   dashboardOverBudgetLink: 'Open budgets',
@@ -246,10 +243,7 @@ const en: Record<MessageKey, string> = {
   chartAriaLabel: 'Monthly income, spending, and balance — donut chart',
   chartNoData: 'No income or spending this month yet',
   chartDeficitHint: 'Spending exceeds income this month',
-  chartBudgetByCategory: 'Limit by category (from Budgets)',
-  chartBudgetSelectLabel: 'Category',
-  chartBudgetSpentVsLimit: 'Spent / limit (this month)',
-  chartTopExpenses: 'Top expense categories',
+  chartExpenseAnalyticsLink: 'Detailed analytics →',
   chartTopIncome: 'Top income categories',
   kpiCardIncomeSub: 'Everything that came into your accounts this month',
   kpiCardExpenseSub: 'Everything you spent this month',
@@ -474,7 +468,7 @@ const ru: Record<MessageKey, string> = {
   labelTheme: 'Тема',
   sectionSummaryTitle: 'Ваши деньги за месяц',
   sectionSummaryDesc:
-    'Баланс в центре диаграммы; доход и расход — справа; лимиты по категориям и крупнейшие статьи — ниже, за выбранный месяц.',
+    'Баланс в центре диаграммы; доход и расход — справа; расходы по статьям и крупнейшие строки — ниже, за выбранный месяц.',
   dashboardOverBudgetBanner:
     'По некоторым категориям расходов превышен месячный лимит — загляните в бюджеты.',
   dashboardOverBudgetLink: 'Открыть бюджеты',
@@ -484,10 +478,7 @@ const ru: Record<MessageKey, string> = {
   chartAriaLabel: 'Доход, расход и баланс за месяц — круговая диаграмма',
   chartNoData: 'За этот месяц пока нет доходов и расходов',
   chartDeficitHint: 'Расходы за месяц выше дохода',
-  chartBudgetByCategory: 'Лимит по категории (из вкладки «Бюджеты»)',
-  chartBudgetSelectLabel: 'Категория',
-  chartBudgetSpentVsLimit: 'Потрачено / лимит (за месяц)',
-  chartTopExpenses: 'Крупнейшие расходы по категориям',
+  chartExpenseAnalyticsLink: 'Подробная аналитика →',
   chartTopIncome: 'Крупнейшие доходы по категориям',
   kpiCardIncomeSub: 'Всё, что поступило к вам за этот месяц',
   kpiCardExpenseSub: 'Всё, что вы потратили за этот месяц',

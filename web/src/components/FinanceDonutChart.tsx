@@ -1,7 +1,5 @@
-import { useId, useMemo, useState } from 'react'
-import SelectField from './SelectField'
-import type { BudgetMap } from '../data/budgetTypes'
-import { EXPENSE_CATEGORIES } from '../data/budgetTypes'
+import { useId, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { categoryLabel } from '../i18n/locales'
 import type { MessageKey } from '../i18n/locales'
 
@@ -15,7 +13,6 @@ type Props = {
   totalIncome: number
   totalExpense: number
   balance: number
-  budgets: BudgetMap
   expensesByCategory: [string, number][]
   incomesByCategory: [string, number][]
 }
@@ -32,67 +29,17 @@ export default function FinanceDonutChart({
   totalIncome,
   totalExpense,
   balance,
-  budgets,
   expensesByCategory,
   incomesByCategory,
 }: Props) {
   const gid = useId().replace(/:/g, '')
 
-  const limitedBudgetRows = useMemo(() => {
-    const rows: { category: string; limit: number; spent: number }[] = []
-    for (const c of EXPENSE_CATEGORIES) {
-      const lim = budgets[c] ?? 0
-      if (lim > 0) {
-        const spent =
-          expensesByCategory.find(([name]) => name === c)?.[1] ?? 0
-        rows.push({ category: c, limit: lim, spent })
-      }
-    }
-    return rows
-  }, [budgets, expensesByCategory])
+  const expenseRows = useMemo(() => {
+    return [...expensesByCategory]
+      .filter(([, amount]) => amount > 0)
+      .sort((a, b) => b[1] - a[1])
+  }, [expensesByCategory])
 
-  const [selectedBudgetCat, setSelectedBudgetCat] = useState<string | null>(null)
-
-  const selectValue = useMemo(() => {
-    if (limitedBudgetRows.length === 0) return ''
-    if (
-      selectedBudgetCat &&
-      limitedBudgetRows.some((r) => r.category === selectedBudgetCat)
-    ) {
-      return selectedBudgetCat
-    }
-    return limitedBudgetRows[0].category
-  }, [limitedBudgetRows, selectedBudgetCat])
-
-  const selectedBudget = useMemo(() => {
-    if (limitedBudgetRows.length === 0) return null
-    return (
-      limitedBudgetRows.find((r) => r.category === selectValue) ??
-      limitedBudgetRows[0]
-    )
-  }, [limitedBudgetRows, selectValue])
-
-  const budgetBar = useMemo(() => {
-    if (!selectedBudget || selectedBudget.limit <= 0) {
-      return { pct: 0, over: false }
-    }
-    const raw = (selectedBudget.spent / selectedBudget.limit) * 100
-    return { pct: Math.min(100, raw), over: raw > 100 }
-  }, [selectedBudget])
-
-  const budgetSelectOptions = useMemo(
-    () =>
-      limitedBudgetRows.map((r) => ({
-        value: r.category,
-        label: categoryLabel(r.category, t),
-      })),
-    [limitedBudgetRows, t],
-  )
-
-  const topExp = useMemo(
-    () => [...expensesByCategory].sort((a, b) => b[1] - a[1]).slice(0, 4),
-    [expensesByCategory],
-  )
   const topInc = useMemo(
     () => [...incomesByCategory].sort((a, b) => b[1] - a[1]).slice(0, 4),
     [incomesByCategory],
@@ -268,74 +215,57 @@ export default function FinanceDonutChart({
           <p className="finance-donut__side-note muted">{t('chartBalanceInRingHint')}</p>
         </section>
 
-        {limitedBudgetRows.length > 0 && selectedBudget && (
-          <div className="finance-donut__budget">
-            <p className="finance-donut__budget-title">{t('chartBudgetByCategory')}</p>
-            <label className="finance-donut__budget-field">
-              <span className="finance-donut__budget-select-label">
-                {t('chartBudgetSelectLabel')}
-              </span>
-              <SelectField
-                value={selectValue}
-                onChange={setSelectedBudgetCat}
-                options={budgetSelectOptions}
-                ariaLabel={t('chartBudgetSelectLabel')}
-                menuMaxHeight={280}
-              />
-            </label>
-            <div className="finance-donut__budget-head">
-              <span className="finance-donut__budget-spent-label">
-                {t('chartBudgetSpentVsLimit')}
-              </span>
-              <span className="finance-donut__budget-nums">
-                {currencyFmt(selectedBudget.spent)} / {currencyFmt(selectedBudget.limit)}
-              </span>
-            </div>
-            <div
-              className="finance-donut__budget-track"
-              role="progressbar"
-              aria-valuenow={Math.round(Math.min(100, budgetBar.pct))}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            >
-              <div
-                className={`finance-donut__budget-bar ${
-                  budgetBar.over ? 'finance-donut__budget-bar--over' : ''
-                }`}
-                style={{ width: budgetBar.over ? '100%' : `${budgetBar.pct}%` }}
-              />
-            </div>
-          </div>
-        )}
+        <section
+          className="finance-donut__expense-cat"
+          aria-labelledby="finance-expense-cat-heading"
+        >
+          <h3 id="finance-expense-cat-heading" className="finance-donut__side-heading">
+            {t('expenseAnalytics')}
+          </h3>
+          {expenseRows.length === 0 ? (
+            <p className="finance-donut__expense-cat-empty muted">{t('noExpensesMonth')}</p>
+          ) : (
+            <ul className="finance-donut__expense-cat-list">
+              {expenseRows.map(([cat, amount]) => {
+                const pct =
+                  totalExpense > 0 ? Math.min(100, Math.round((amount / totalExpense) * 1000) / 10) : 0
+                return (
+                  <li key={cat}>
+                    <div className="finance-donut__expense-cat-row">
+                      <span className="finance-donut__expense-cat-name">{categoryLabel(cat, t)}</span>
+                      <span className="finance-donut__expense-cat-amt text-expense">
+                        {currencyFmt(amount)}
+                      </span>
+                    </div>
+                    <div className="finance-donut__expense-cat-track" aria-hidden>
+                      <div
+                        className="finance-donut__expense-cat-fill"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+          <Link className="finance-donut__analytics-link" to="/analytics">
+            {t('chartExpenseAnalyticsLink')}
+          </Link>
+        </section>
 
-        {(topExp.length > 0 || topInc.length > 0) && (
+        {topInc.length > 0 && (
           <div className="finance-donut__breakdown">
-            {topExp.length > 0 && (
-              <div className="finance-donut__breakdown-block">
-                <p className="finance-donut__breakdown-title">{t('chartTopExpenses')}</p>
-                <ul className="finance-donut__mini-list">
-                  {topExp.map(([name, val]) => (
-                    <li key={name}>
-                      <span>{categoryLabel(name, t)}</span>
-                      <span className="text-expense">{currencyFmt(val)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {topInc.length > 0 && (
-              <div className="finance-donut__breakdown-block">
-                <p className="finance-donut__breakdown-title">{t('chartTopIncome')}</p>
-                <ul className="finance-donut__mini-list">
-                  {topInc.map(([name, val]) => (
-                    <li key={name}>
-                      <span>{categoryLabel(name, t)}</span>
-                      <span className="text-income">{currencyFmt(val)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div className="finance-donut__breakdown-block">
+              <p className="finance-donut__breakdown-title">{t('chartTopIncome')}</p>
+              <ul className="finance-donut__mini-list">
+                {topInc.map(([name, val]) => (
+                  <li key={name}>
+                    <span>{categoryLabel(name, t)}</span>
+                    <span className="text-income">{currencyFmt(val)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
       </div>

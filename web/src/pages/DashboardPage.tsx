@@ -12,7 +12,6 @@ export default function DashboardPage() {
     balance,
     currencyFmt,
     overBudgetCategories,
-    budgets,
     expensesByCategory,
     incomesByCategory,
   } = useBudgetData()
@@ -46,7 +45,6 @@ export default function DashboardPage() {
           totalIncome={totalIncome}
           totalExpense={totalExpense}
           balance={balance}
-          budgets={budgets}
           expensesByCategory={expensesByCategory}
           incomesByCategory={incomesByCategory}
         />
